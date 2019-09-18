@@ -203,7 +203,7 @@ class SurveyFileAutomation(models.Model):
                                             verbose_name='Type Exporting Profile No, e.g. 1, 2, 5',
                                             blank=False, null=False, default='All Profiles')
     overwriting = models.BooleanField(verbose_name='Overwritting existing data',
-                                      default=False, blank=False, null=False)
+                                      default=True, blank=False, null=False)
     uploaded_time = models.DateTimeField(verbose_name='Uploaded Time', blank=False, null=False)
     uploader = models.CharField(max_length=30, verbose_name='Uploader', blank=False, null=False)
     uploader_email = models.EmailField(max_length=50, verbose_name='Uploader Email', blank=False, null=False)
