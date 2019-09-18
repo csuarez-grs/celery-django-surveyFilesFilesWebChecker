@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block scripts %}
+<link rel="stylesheet" type="text/css" href="{% static 'surveyfiles/style.css' %}"/>
+
+
+<script src="{% static 'surveyfiles/app.js' %}"></script>
+{% endblock %}
+
+<title>{% block title %}{% endblock %}</title>
+
+<body>
+
+{% block content %}
+
+{% endblock %}
+
+</body>

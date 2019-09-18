@@ -1,0 +1,77 @@
+{% extends 'surveyfiles/base.html'%}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-8">
+            <h3 class="mt-2">Please use standard name convention for JXL or CSV File: "20190603-19CF0231-SA"</h3>
+            <h3 class="mt-2">For CSV Files, please give UTM system name and scale value.</h3>
+            <h3 class="mt-2">For JXL files, select "Extract UTM name and scale factor value from jxl file".</h3>
+            <hr class="mt-0 mb-4">
+            <div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="buttons">
+                        <button type="submit" class="btn btn-success">Upload</button>
+                        <a class="btn btn-warning" href="{% url 'surveyfiles:jxl_list_view' %}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+            {% if messages %}
+            <div class="alert-areas">
+                {% for message in messages %}
+                {{ message }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+
+            <!--<iframe name="hiddenFrame" class="hide"></iframe>-->
+            <!--<div class="table-title-2">JXL File Uploading</div>-->
+            <!--<div class="row">-->
+            <!--<div class="col" id="new-task-section">-->
+            <!--<form method="post" enctype="multipart/form-data">-->
+            <!--{% csrf_token %}-->
+            <!--{% for field in form %}-->
+            <!--<div class="row">-->
+            <!--<div class="col-md-3">-->
+            <!--<div><label class="field-label">{{ field.label_tag }}</label></div>-->
+            <!--<div class="field-errors">{{ field.errors }}</div>-->
+            <!--</div>-->
+            <!--<div class="col-md-9 field-text">-->
+            <!--{% if field.help_text %}-->
+            <!--{# <sup>{{ field.help_text }}</sup>#}-->
+            <!--{{ field.help_text }}-->
+            <!--{% endif %}-->
+            <!--{{ field }}-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--{% endfor %}-->
+
+            <!--<div class="row">-->
+            <!--<div class="col-md-12" style="margin: 5px; text-align: left">-->
+            <!--<div class="buttons-area">-->
+            <!--<button type="submit" class="form-button form-button-submit">Upload</button>-->
+            <!--<a class="form-button form-button-cancel" href="{% url 'surveyfiles:jxl_list_view' %}">Cancel</a>-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--</form>-->
+
+            <!--<div class="alert-areas">-->
+            <!--{% if messages %}-->
+            <!--{% for message in messages %}-->
+            <!--{{ message }}-->
+            <!--{% endfor %}-->
+            <!--{% endif %}-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--</div>-->
+        </div>
+    </div>
+</div>
+{% endblock %}

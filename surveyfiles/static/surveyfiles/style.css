@@ -1,0 +1,317 @@
+
+#new-task-section {
+    margin-left: 35%;
+    width: 30%;
+    max-width: 30%;
+    padding: 5px;
+    color: whitesmoke;
+    background-color: slategray;
+    text-align: -webkit-left;
+    font-size: medium;
+}
+
+@media (max-width: 900px) {
+
+    #new-task-section {
+        margin-left: 5%;
+        width: 90%;
+        max-width: 90%;
+    }
+
+    .buttons-area {
+        flex-direction: column;
+    }
+
+    .form-button {
+        display: inline-block;
+        margin: 0.5em 0;
+    }
+}
+
+.field-errors {
+    color: cyan;
+}
+
+.field-label {
+    /*background: #a55b4c;*/
+    /*padding: 5px;*/
+    font-weight: bolder;
+    color: lightcyan;
+    font-size: medium;
+}
+
+
+
+.checkbox label {
+    color: whitesmoke;
+    margin: 2px 2px 2px 10px;
+    align-items: center;
+    padding: 2px;
+    display: flex;
+}
+
+input[type=checkbox] {
+    width: 1.3em; /*Desired width*/
+    height: 1.3em; /*Desired height*/
+    cursor: pointer;
+    padding: 0;
+    margin: 0 0.3em 0 0;
+}
+
+input[type=checkbox]:after {
+    content: " ";
+    background-color: whitesmoke;
+    display: inline-block;
+    visibility: visible;
+}
+
+input[type=checkbox]:checked:after {
+    content: "\2714";
+    background-color: dodgerblue;
+    color: whitesmoke;
+    width: 1.3em; /*Desired width*/
+    height: 1.3em; /*Desired height*/
+    /*padding: 0 0 0.1em 0.1em;*/
+    /* this is a checkmark symbol */
+}
+
+form > div {
+    border-bottom: solid 1px;
+    border-color: silver;
+    margin-bottom: 10px;
+}
+
+#div_id_exporting_types_selected {
+    background-color: gray;
+    color: whitesmoke;
+    padding: 10px 5px ;
+    margin-left: -15px;
+}
+
+#div_id_exporting_types_selected > div {
+    margin: 25px;
+}
+
+#div_id_exporting_types_selected > div > label {
+    display: inline-block;
+    align-items: center;
+    vertical-align: center;
+    margin-left: 5px;
+    margin-right: 15px;
+    padding: 2px;
+}
+
+.btn {
+    margin-right: 15pt;
+}
+
+.field-text label {
+    /*background: #a55b4c;*/
+    /*padding: 5px;*/
+    font-weight: bolder;
+    color: whitesmoke;
+    font-size: medium;
+}
+
+.field-text textarea, input[type=text], input[type=number], select {
+    /*background: #a55b4c;*/
+    /*padding: 5px;*/
+    font-weight: bolder;
+    color: black;
+    font-size: medium;
+    width: 100%;
+    clear: both;
+}
+
+.job-label {
+    /*background: #a55b4c;*/
+    /*padding: 5px;*/
+    font-weight: bolder;
+    color: yellow;
+    font-size: medium;
+}
+
+.job-text {
+    /*background: #a55b4c;*/
+    /*padding: 5px;*/
+    font-weight: bolder;
+    color: whitesmoke;
+    font-size: medium;
+}
+
+.row {
+    display: flex; /* equal height of the children */
+}
+
+.col {
+    flex: 1; /* additionally, equal width */
+
+    padding: 1em;
+    /*border: solid;*/
+}
+
+/*#new-task-section select, textarea, input[type=number] {*/
+    /*width: 100%;*/
+    /*display: block;*/
+    /*clear: both;*/
+/*}*/
+
+#new-task-section form div.row {
+    /*border-bottom: 1px solid #bcc5cb;*/
+    margin: 2px;
+    padding: 2px;
+}
+
+select {
+    height: 30px;
+}
+
+.cards-div {
+    font-weight: bold;
+    float: left;
+    /*justify-content: left;*/
+    width: 95%;
+}
+
+.file-card {
+    float: left;
+    box-sizing: border-box;
+    max-width: 260px;
+    min-width: 260px;
+    max-height: 250px;
+    min-height: 250px;
+    background-color: gray;
+    color: white;
+    padding: 1em;
+    margin: 0.5em;
+    border: solid 5px deepskyblue;
+    word-break: break-all;
+}
+
+.new {
+    background-color: steelblue;
+    color: ghostwhite;
+
+}
+
+.succeeded {
+    background-color: slategray;
+    color: ghostwhite;
+}
+
+.failed {
+    background-color: indianred;
+    color: ghostwhite;
+}
+
+.blinking {
+
+    animation: opacity 3s alternate infinite;
+    opacity: 1;
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 1;
+        background-color: darkblue;
+        color: whitesmoke;
+    }
+
+    50% {
+        opacity: 1;
+        background-color: darkred;
+        color: whitesmoke;
+    }
+
+    100% {
+        opacity: 1;
+        background-color: darkblue;
+        color: whitesmoke;
+    }
+}
+
+.flashing {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+        color: red;
+    }
+}
+
+.uploader-button {
+    margin: 0.3em;
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+    background-color: #538fbe;
+    padding: 20px 70px;
+    font-size: 24px;
+    border: 1px solid #2d6898;
+    background-image: linear-gradient(bottom, rgb(73, 132, 180) 0%, rgb(97, 155, 203) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(73, 132, 180) 0%, rgb(97, 155, 203) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(73, 132, 180) 0%, rgb(97, 155, 203) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(73, 132, 180) 0%, rgb(97, 155, 203) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(73, 132, 180) 0%, rgb(97, 155, 203) 100%);
+
+    background-image: -webkit-gradient(
+            linear,
+            left bottom,
+            left top,
+            color-stop(0, rgb(73, 132, 180)),
+            color-stop(1, rgb(97, 155, 203))
+    );
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, .5);
+    -webkit-box-shadow: 0px 6px 0px #2b638f, 0px 3px 15px rgba(0, 0, 0, .4), inset 0px 1px 0px rgba(255, 255, 255, .3), inset 0px 0px 3px rgba(255, 255, 255, .5);
+    -moz-box-shadow: 0px 6px 0px #2b638f, 0px 3px 15px rgba(0, 0, 0, .4), inset 0px 1px 0px rgba(255, 255, 255, .3), inset 0px 0px 3px rgba(255, 255, 255, .5);
+    box-shadow: 0px 6px 0px #2b638f, 0px 3px 15px rgba(0, 0, 0, .4), inset 0px 1px 0px rgba(255, 255, 255, .3), inset 0px 0px 3px rgba(255, 255, 255, .5);
+}
+
+.uploader-button:hover {
+    text-decoration: none;
+    color: greenyellow;
+    background-image: linear-gradient(bottom, rgb(79, 142, 191) 0%, rgb(102, 166, 214) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(79, 142, 191) 0%, rgb(102, 166, 214) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(79, 142, 191) 0%, rgb(102, 166, 214) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(79, 142, 191) 0%, rgb(102, 166, 214) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(79, 142, 191) 0%, rgb(102, 166, 214) 100%);
+
+    background-image: -webkit-gradient(
+            linear,
+            left bottom,
+            left top,
+            color-stop(0, rgb(79, 142, 191)),
+            color-stop(1, rgb(102, 166, 214))
+    );
+}
+
+.alert-areas, .help-block strong {
+    color: greenyellow;
+    background-color: dimgrey;
+    font-weight: bold;
+    font-size: large;
+    padding: 0.2em;
+    margin: 0.2em 0;
+}
+
+/* unvisited link */
+.cards-div a:link {
+    color: chartreuse;
+}
+
+/* visited link */
+.cards-div a:visited {
+    color: chartreuse;
+}
+
+/* mouse over link */
+.cards-div a:hover {
+    color: darkorange;
+}
+

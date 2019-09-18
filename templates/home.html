@@ -1,0 +1,37 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+{% load auth_extras %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <!--<div id="navigation_links">-->
+        <!--{% if request.user.is_authenticated %}-->
+            <!--{% if request.user.first_name %}-->
+                <!--<p class="hello-word">Hi {{ request.user.first_name }}! You are logged in !</p>-->
+            <!--{% else %}-->
+                <!--<p class="hello-word">Hi {{ request.user.username }}! You are logged in !</p>-->
+            <!--{% endif %}-->
+
+            <!--{% if request.user.is_superuser %}-->
+                <!--<p>Other Users Logged in: {{ current_users }} </p>-->
+            <!--{% endif %}-->
+        <!--{% endif %}-->
+    <!--</div>-->
+    <div class="huge-button-div">
+
+        <div style="text-align: center">
+            <a class="huge-button" href="{% url 'surveyfiles:jxl_create_view' %}">Upload New JXL</a>
+        </div>
+
+
+        <div style="text-align: center">
+            <a class="huge-button" href="{% url 'surveyfiles:jxl_list_view' %}">Automation List</a>
+        </div>
+
+        <div style="text-align: center">
+            <a class="huge-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Automation Cards</a>
+        </div>
+
+    </div>
+{% endblock %}

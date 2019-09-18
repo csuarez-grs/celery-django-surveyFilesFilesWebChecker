@@ -1,0 +1,316 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+import datetime
+import os
+import re
+import time
+import uuid
+
+from django.core.exceptions import ValidationError
+from django.core.files.storage import FileSystemStorage
+from django.db import models
+# Create your models here.
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
+from multiselectfield import MultiSelectField
+
+from core.models import GRSJobInfo
+from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types
+from new_fortis_tools_20190625 import read_jxl_info
+
+exporting_types_options = [(item, item) for item in default_exporting_types]
+
+
+def validate_jxl_content(document):
+    document_path = str(document.file.name)
+    document_name = os.path.basename(document_path)
+    document_ext = document_name[-4:].lower()
+
+    if document_ext == ',jxl':
+
+        try:
+            read_jxl_info(document_path, return_utm_name=True)
+        except Exception as e:
+            errors = str(e)
+            raise ValidationError(
+                _('%(document_name)s errors: %(errors)s'),
+                params={'document_name': document_name, 'errors': errors}
+            )
+
+
+def validate_jxl_pattern(document):
+    document_name = os.path.basename(str(document.file.name))
+    document_ext = document_name[-4:].lower()
+    print('checking {}: type-{} ext-{}'.format(document_name, type(document_name), document_ext))
+
+    if document_ext not in ['.csv', '.jxl']:
+        raise ValidationError(
+            _('%(file_name)s: is not .csv or .jxl file'),
+            params={'file_name': document_name},
+        )
+
+    # jxl_name_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})\-S(?P<site_no>\d+)[\_\-\.]', re.IGNORECASE)
+    jxl_name_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
+    if not re.search(jxl_name_pattern, document_name):
+        raise ValidationError(
+            # _('%(file_name)s: Please include valid job no and site no like "19CF0001-S1" in your file name'),
+            _('%(file_name)s: Please include valid job no like "19CF0001" in your file name'),
+            params={'file_name': document_name},
+        )
+    else:
+        group_matched = list(re.finditer(jxl_name_pattern, document_name))[0]
+        groups_dict = group_matched.groupdict()
+        print('{}'.format(groups_dict))
+
+    job_no = groups_dict['job_no']
+    # site_no = int(groups_dict['site_no'])
+
+    try:
+        GRSJobInfo.objects.get(jobnumber=job_no)
+    except GRSJobInfo.DoesNotExist:
+        raise ValidationError(
+            _('%(job_no)s is not valid latitude job'),
+            params={'job_no': job_no}
+        )
+
+    return job_no
+
+
+def get_upload_path(instance, filename):
+    return os.path.join('documents',
+                        datetime.date.today().strftime('%Y-%m-%d'),
+                        instance.uploader,
+                        time.strftime('%H-%M-%S'),
+                        filename)
+
+
+def get_obj_time_ago(obj_time):
+    if datetime.date.today() == obj_time.date():
+        delta = datetime.datetime.now() - obj_time
+    else:
+        delta = datetime.date.today() - obj_time.date()
+
+    seconds = int(round(delta.total_seconds()))
+    if seconds < 0:
+        seconds = 0
+
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+
+    if days > 0:
+        time_str = '{} days'.format(days)
+    elif hours > 0:
+        time_str = '{} hours'.format(hours)
+    elif minutes > 0:
+        time_str = '{} minutes'.format(minutes)
+    else:
+        time_str = "{:02d} seconds".format(seconds)
+
+    return time_str
+
+
+def get_target_url(target_path, name=None):
+    if target_path is not None and re.search(r'grs\.com', target_path, re.IGNORECASE):
+        if os.path.isdir(target_path) or os.path.isfile(target_path):
+            target_url = 'file://{}'.format(target_path[2:])
+            if name is None:
+                if os.path.isdir(target_path):
+                    target_url_link = format_html(
+                        '<a href="{0}">{1}</a>'.format(target_url, os.path.basename(target_path)))
+                else:
+                    target_url_link = format_html('<a href="{0}">{1}</a>'.format(target_url,
+                                                                                 os.path.basename(target_path)[
+                                                                                 0:-4].replace('-', '_')))
+            else:
+                target_url_link = format_html('<a href="{0}">{1}</a>'.format(target_url, name))
+        else:
+            target_url_link = 'File does not exits anymore'
+
+    else:
+        target_url_link = None
+
+    return target_url_link
+
+
+class OverwriteStorage(FileSystemStorage):
+    '''
+    Muda o comportamento padrão do Django e o faz sobrescrever arquivos de
+    mesmo nome que foram carregados pelo usuário ao invés de renomeá-los.
+    '''
+
+    def get_available_name(self, name, max_length=None):
+        if self.exists(name):
+            os.remove(os.path.join(self.location, name))
+        return name
+
+
+class MinMaxFloat(models.FloatField):
+    def __init__(self, min_value=None, max_value=None, *args, **kwargs):
+        self.min_value, self.max_value = min_value, max_value
+        super(MinMaxFloat, self).__init__(*args, **kwargs)
+
+    def formfield(self, **kwargs):
+        defaults = {'min_value': self.min_value, 'max_value': self.max_value}
+        defaults.update(kwargs)
+        return super(MinMaxFloat, self).formfield(**defaults)
+
+
+class MinMaxInteger(models.IntegerField):
+    def __init__(self, min_value=None, max_value=None, *args, **kwargs):
+        self.min_value, self.max_value = min_value, max_value
+        super(MinMaxInteger, self).__init__(*args, **kwargs)
+
+    def formfield(self, **kwargs):
+        defaults = {'min_value': self.min_value, 'max_value': self.max_value}
+        defaults.update(kwargs)
+        return super(MinMaxInteger, self).formfield(**defaults)
+
+
+class SurveyFileAutomation(models.Model):
+    _DATABASE = 'default'
+    tracking_id = models.CharField(db_column='Tracking ID', primary_key=True, max_length=36)
+    job_no = models.CharField(db_column='GRSJobNo', max_length=30)
+    description = models.CharField(verbose_name='Description', max_length=500, blank=True, null=True)
+    document = models.FileField(upload_to=get_upload_path,
+                                verbose_name='Document',
+                                blank=False, null=False,
+                                validators=[validate_jxl_pattern, validate_jxl_content],
+                                storage=OverwriteStorage())
+    site_no = MinMaxInteger(db_column='Site No', blank=False, null=False, min_value=1)
+    extract_input_values = models.BooleanField(verbose_name='Extract UTM name and scale factor value from jxl file',
+                                               default=False, blank=False, null=False)
+    utm_sr_name = models.CharField(verbose_name='Project System Name', max_length=100, blank=True, null=True,
+                                   choices=((item, item) for item in project_coordinates_list))
+    scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True, min_value=0.0, max_value=1.0)
+    create_gis_data = models.BooleanField(db_column='Create GIS datasets',
+                                          verbose_name='Create GIS datasets',
+                                          default=False, blank=False, null=False)
+    notify_surveyor = models.BooleanField(db_column='Send QC results to Surveyor',
+                                          default=False, blank=False, null=False)
+    notify_pm = models.BooleanField(db_column='Send Client Reports to Project Manager',
+                                    default=False, blank=False, null=False)
+    create_client_report = models.BooleanField(db_column='Create Client Report',
+                                               verbose_name='Create Client Report',
+                                               default=False, blank=False, null=False)
+    exporting_types_selected = MultiSelectField(db_column='Select Export Types', max_length=255,
+                                                choices=exporting_types_options,
+                                                default=[c[0] for c in exporting_types_options],
+                                                verbose_name='Select Export Types')
+    exporting_profile_no = models.CharField(db_column='Type Exporting Profile No',
+                                            max_length=255,
+                                            verbose_name='Type Exporting Profile No, e.g. 1, 2, 5',
+                                            blank=False, null=False, default='All Profiles')
+    overwriting = models.BooleanField(verbose_name='Overwritting existing data',
+                                      default=False, blank=False, null=False)
+    uploaded_time = models.DateTimeField(verbose_name='Uploaded Time', blank=False, null=False)
+    uploader = models.CharField(max_length=30, verbose_name='Uploader', blank=False, null=False)
+    uploader_email = models.EmailField(max_length=50, verbose_name='Uploader Email', blank=False, null=False)
+    job_description = models.CharField(db_column='Job Description', max_length=500, blank=True, null=True)
+    project_manager = models.CharField(db_column='Project Manager', max_length=255, blank=True, null=True)
+    project_manager_email = models.CharField(db_column='Project Manager Email', max_length=255, blank=True, null=True)
+    qc_time = models.DateTimeField(verbose_name='Check Time', blank=True, null=True)
+    qc_passed = models.CharField(verbose_name='QC Passed', max_length=30, blank=True, null=True)
+    jxl_errors = models.CharField(max_length=500, verbose_name='JXL Errors', blank=True, null=True)
+    site_folder = models.CharField(db_column='Site Folder', max_length=500, blank=True, null=True)
+    automation_started = models.DateTimeField(db_column='Automation Started', blank=True, null=True)
+    automation_ended = models.DateTimeField(db_column='Automation Ended', blank=True, null=True)
+    time_cost_minutes = models.IntegerField(db_column='Time Cost Minutes', blank=True, null=True)
+    automation_status = models.CharField(db_column='Automation Status', max_length=10, blank=True, null=True)
+    log_path = models.CharField(db_column='Log Path', max_length=255, blank=True, null=True,
+                                verbose_name='Working Log')
+    exp_path = models.TextField(db_column='EXP Path', blank=True, null=True)
+    ald_csv_path = models.TextField(db_column='ALD CSV Path', blank=True, null=True)
+    wgs84_csv = models.TextField(db_column='WGS84 CSV', blank=True, null=True)
+    kmz_path = models.TextField(db_column='KMZ Path', blank=True, null=True)
+    errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
+    done_with_automation = models.CharField(db_column='Done With Automation', max_length=1
+                                            , blank=True, null=True,
+                                            choices=(('Y', 'Yes'), ('N', 'No'), ('', 'Blank')))
+    edited_time = models.DateTimeField(db_column='Edited Time', blank=True, null=True)
+    edited_by = models.CharField(db_column='Edited By', max_length=50, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'SurveyFileAutomation'
+        ordering = ('-uploaded_time', 'job_no')
+
+    def __unicode__(self):
+        return '{} - {} - {}'.format(self.uploaded_time, self.uploader, self.document.path)
+
+    def save(self, *args, **kwargs):
+
+        if self._state.adding:
+            job_no = self.job_no
+            self.tracking_id = str(uuid.uuid1())
+            self.uploaded_time = datetime.datetime.now()
+
+            if job_no is not None:
+                job_obj = GRSJobInfo.objects.get(jobnumber=job_no)
+                if job_obj is not None:
+                    self.project_manager = job_obj.get_pm_name()
+                    self.project_manager_email = job_obj.get_pm_email()
+                    try:
+                        self.job_description = job_obj.description.encode(
+                            'utf-8') if job_obj.description is not None else None
+                    except:
+                        self.job_description = None
+
+        super(SurveyFileAutomation, self).save(*args, **kwargs)
+
+    def get_log_link(self):
+        if self.log_path is not None and os.path.isfile(self.log_path):
+            log_link = get_target_url(self.log_path, name='log')
+            return log_link
+        else:
+            return None
+
+    def get_site_folder_link(self):
+        if self.site_folder is not None and os.path.isdir(self.site_folder):
+            folder_link = get_target_url(self.site_folder)
+        else:
+            folder_link = None
+
+        return folder_link
+
+    def get_time_ago(self):
+        return get_obj_time_ago(self.uploaded_time)
+
+    def get_exp_links(self):
+
+        file_list = [str(item).strip() for item in self.exp_path.split('; ')
+                     if os.path.isfile(str(item).strip())]
+
+        if len(file_list) > 0:
+            links_str = format_html(' '.join(sorted([get_target_url(item) for item in file_list])))
+        else:
+            links_str = None
+
+        return links_str
+
+    def get_ald_csv_links(self):
+
+        file_list = [str(item).strip() for item in self.ald_csv_path.split('; ')
+                     if os.path.isfile(str(item).strip())]
+
+        if len(file_list) > 0:
+            links_str = format_html(' '.join(sorted([get_target_url(item) for item in file_list])))
+        else:
+            links_str = None
+
+        return links_str
+
+    def get_wgs_84_csv_link(self):
+        if self.wgs84_csv is not None and os.path.isfile(self.wgs84_csv):
+            file_link = get_target_url(self.wgs84_csv)
+        else:
+            file_link = None
+        return file_link
+
+    def get_kmz_link(self):
+        if self.kmz_path is not None and os.path.isfile(self.kmz_path):
+            file_link = get_target_url(self.kmz_path)
+        else:
+            file_link = None
+        return file_link

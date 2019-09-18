@@ -1,0 +1,49 @@
+{% extends 'surveyfiles/base.html'%}
+{% load bootstrap4 %}
+
+{% load render_table from django_tables2 %}
+
+{% block title %}JXL Automation Overview{% endblock %}
+
+{% block content %}
+
+<div class="table-container table-section">
+
+    <div style="text-align: center">
+        <a class="uploader-button" href="{% url 'surveyfiles:jxl_create_view' %}">Upload New JXL</a>
+    </div>
+    <p class="web-title">JXL Automation Overview</p>
+    <p class="table-title-1" id="refreshtime">Results</p>
+    <p class="table-title-2">{{ all_summary }}</p>
+    <p class="table-title-2">{{ today_summary }}</p>
+    {# <p class="table-title-2">{{ search_script_log }}</p>#}
+    {% for info in pc_status_list %}
+    <p class="table-title-3">{{ info }}</p>
+    {% endfor %}
+    <div>
+        {% if filter %}
+        {# <p class="table-title">Filtering Data</p>#}
+        <form action="" method="get" class="form form-inline">
+            {% bootstrap_form filter.form layout='inline' %}
+            <div>
+                {% bootstrap_button 'filter' button_class='btn btn-success' %}
+                <a style="margin: 0.1em" class="btn btn-warning" href=" {{ request.path }} ">Remove All Filters</a>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+    <div>
+        {% if is_paginated %}
+        {% include "_pagination_short.html" %}
+        {% endif %}
+    </div>
+    {% render_table table %}
+
+    <div>
+        {% if is_paginated %}
+        {% include "_pagination_short.html" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
