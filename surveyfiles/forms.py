@@ -17,7 +17,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
         fields = ['document', 'site_no', 'extract_input_values',
                   'utm_sr_name', 'scale_value',
                   'notify_surveyor', 'notify_pm',
-                  'create_gis_data',
+                  'create_gis_data', 'create_client_report',
                   'exporting_profile_no',
                   'exporting_types_selected',
                   'overwriting']

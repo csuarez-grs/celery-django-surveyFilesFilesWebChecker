@@ -99,6 +99,11 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             create_gis_data = True
         else:
             create_gis_data = False
+            
+        if self.object.create_client_report == 1:
+            create_client_report = True
+        else:
+            create_client_report = False
 
         if self.object.overwriting == 1:
             overwriting = True
@@ -134,7 +139,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             self.object.scale_value
         ]
 
-        args = (document_path, tracking_id, create_gis_data,
+        args = (document_path, tracking_id, create_gis_data, create_client_report,
                 exporting_types, exporting_profiles,
                 overwriting, notify_surveyor, notify_pm, uploading_info)
 

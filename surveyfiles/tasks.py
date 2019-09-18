@@ -54,7 +54,8 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str):
 
 
 @celery_app.task()
-def quality_check_jxl(uploaded_file, tracking_id, create_gis_data, exporting_types, exporting_profiles, overwriting,
+def quality_check_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report,
+                      exporting_types, exporting_profiles, overwriting,
                       notify_surveyor, notify_pm, uploading_info):
     print('QC Check {}'.format(uploaded_file))
     worker = FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, tracking_id=tracking_id, logger_name='QC',
@@ -63,19 +64,22 @@ def quality_check_jxl(uploaded_file, tracking_id, create_gis_data, exporting_typ
 
     worker.qc_check()
 
-    if worker.qc_results == 'Succeeded' and create_gis_data:
-        run_automation_jxl(uploaded_file, tracking_id, create_gis_data, exporting_types, exporting_profiles,
+    if worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
+        run_automation_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report, exporting_types,
+                           exporting_profiles,
                            overwriting, notify_pm, uploading_info=uploading_info)
 
 
 @celery_app.task()
-def run_automation_jxl(uploaded_file, tracking_id, create_gis_data, exporting_types, exporting_profiles, overwriting,
+def run_automation_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report,
+                       exporting_types, exporting_profiles, overwriting,
                        notify_pm, uploading_info):
     print('Running automation for {}'.format(uploaded_file))
 
     worker = FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
                                           tracking_id=tracking_id,
                                           create_gis_data=create_gis_data,
+                                          create_reports=create_client_report,
                                           exporting_profiles=exporting_profiles,
                                           exporting_types=exporting_types,
                                           overwriting=overwriting,
