@@ -200,7 +200,7 @@ class SurveyFileAutomation(models.Model):
                                                 verbose_name='Select Export Types')
     exporting_profile_no = models.CharField(db_column='Type Exporting Profile No',
                                             max_length=255,
-                                            verbose_name='Type Exporting Profile No, e.g. 1, 2, 5',
+                                            verbose_name='Leave it as it is, or type Exporting Profile No, e.g. 1, 2, 5',
                                             blank=False, null=False, default='All Profiles')
     overwriting = models.BooleanField(verbose_name='Overwritting existing data',
                                       default=True, blank=False, null=False)
