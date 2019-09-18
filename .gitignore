@@ -1,7 +1,6 @@
 .idea/
 .env
 checker-env/
-users/
 media/*
 migrations/
 db.sqlite3
