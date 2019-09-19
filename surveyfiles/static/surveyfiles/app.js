@@ -53,7 +53,7 @@ function tableColoring() {
     $("tr").each(function () {
         var qc_passed = $(this).find("td.qc_passed");
 
-        if (qc_passed == null) {
+        if (qc_passed.text().indexOf('—') >= 0) {
             $(this).addClass('new');
         }
 
