@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import time
+
 from decouple import config
 import sys
 fortis_tools_path = r'\\grs.com\dfs\GIS\GIS_Main\06_Tools\04_ToolBoxes\PythonToolBox\FortisProjectAutomation'
@@ -266,18 +268,52 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+log_folder = os.path.join(BASE_DIR, 'logs')
+if not os.path.isdir(log_folder):
+    os.makedirs(log_folder)
+
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
     "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
+        # "console": {
+        #     "level": "DEBUG",
+        #     "class": "logging.StreamHandler",
+        #     "formatter": "verbose",
+        #     "stream": "ext://sys.stdout"
+        # },
+        # 'file': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.FileHandler',
+        #     'filename': 'logs/request_{}.log'.format(time.strftime('%Y_%m_%d_%H_%M_%S')),
+        #     'formatter': 'verbose',
+        # },
+        'request_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'filename': 'logs/django_request.log',
+            'formatter': 'verbose',
         },
     },
     "loggers": {
-        "django_python3_ldap": {
-            "handlers": ["console"],
-            "level": "INFO",
+        # "django_python3_ldap": {
+        #     "handlers": ["console"],
+        #     "level": "INFO",
+        # },
+        'request': {
+            'handlers': ['request_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }

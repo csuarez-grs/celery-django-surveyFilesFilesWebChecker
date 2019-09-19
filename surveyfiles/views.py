@@ -16,6 +16,9 @@ from .forms import SurveyFileAutomationForm
 from .models import SurveyFileAutomation
 from .tables import SurveyFileAutomationTable
 from .tasks import *
+import logging
+
+logger = logging.getLogger('request')
 
 
 class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, ListView):
@@ -60,16 +63,16 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         return kwargs
 
     def form_invalid(self, form):
-        print('form is not valid: {}'.format(self.get_context_data(form=form)))
+        logger.info('form is not valid: {}'.format(self.get_context_data(form=form)))
         return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
-        print('validating form')
-        print('user', self.request.user.username)
-        print('call saving in form')
+        logger.info('validating form')
+        logger.info('user: {}'.format(self.request.user.username))
+        logger.info('call saving in form')
         form.save()
-        print('saved in form successfully')
-        print(self.request.FILES[u'document'])
+        logger.info('saved in form successfully')
+        logger.info('Document: {}'.format(self.request.FILES[u'document']))
         return super(CreateSurveyFileAutomationView, self).form_valid(form)
 
         # return self.render_to_response(self.get_context_data(
@@ -77,8 +80,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         #     uploaded_file=self.request.FILES[u'document']))
 
     def get_success_message(self, cleaned_data):
-        print('cleaned data', cleaned_data)
-        print('user id', self.request.user.id, type(self.request.user.id))
+        logger.info('cleaned data: {}'.format(cleaned_data))
+        logger.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)))
         uploader_usernane = self.request.user.username
         job_no = self.object.job_no
         site_no = self.object.site_no

@@ -10,7 +10,9 @@ from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
     default_all_profiles_str, default_exporting_types_options
+import logging
 
+logger = logging.getLogger('request')
 
 class SurveyFileAutomationForm(forms.ModelForm):
     # site_no = forms.DecimalField(required=True, min_value=1)
@@ -68,7 +70,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
     def clean(self):
         cleaned_data = self.cleaned_data
         document_name = str(cleaned_data['document'])
-        print('document name', document_name)
+        logger.info('document name: {}'.format(document_name))
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
@@ -76,17 +78,17 @@ class SurveyFileAutomationForm(forms.ModelForm):
         #     extract_input_values, type(extract_input_values),
         #       utm_sr_name, type(utm_sr_name),
         #       scale_value, type(scale_value))
-        print('cleaned data', cleaned_data)
+        logger.info('cleaned data: {}'.format(cleaned_data))
 
         if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
                 or document_name[-4:].lower() == '.csv':
-            print('Checking if UTM and scale are entered.')
+            logger.info('Checking if UTM and scale are entered.')
             if utm_sr_name is None:
                 self.add_error('utm_sr_name', 'Please select UTM name')
             if scale_value is None:
                 self.add_error('scale_value', 'Please type scale factor')
 
-        print('cleaning is done')
+        logger.info('cleaning is done')
 
         return cleaned_data
 
@@ -134,11 +136,11 @@ class SurveyFileAutomationForm(forms.ModelForm):
     #         self.cleaned_data['scale_value'] = scale_value
 
     def save(self):
-        print('Start saving in form')
+        logger.info('Start saving in form')
         user = self.user
         new_jxl_obj = super(SurveyFileAutomationForm, self).save(commit=False)
         document_path = str(new_jxl_obj.document.file.name)
-        print('Document path: {}'.format(document_path))
+        logger.info('Document path: {}'.format(document_path))
         document_name = os.path.basename(document_path)
         if document_name[-4:].lower() == '.jxl' and os.path.isfile(document_path):
             utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)
@@ -152,8 +154,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         new_jxl_obj.uploader = user.username
         new_jxl_obj.uploader_email = user.email
 
-        print('Saving in form')
+        logger.info('Saving in form')
         new_jxl_obj.save()
-        print('Saving in form successfully')
+        logger.info('Saving in form successfully')
 
         return new_jxl_obj
