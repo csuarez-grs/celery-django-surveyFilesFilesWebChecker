@@ -1,9 +1,15 @@
-import os
-
 from django import forms
 
 from new_fortis_tools_20190625 import read_jxl_info
-from .models import SurveyFileAutomation, validate_jxl_pattern
+from templatetags.auth_extras import *
+from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
+    default_all_profiles_str, default_exporting_types_options
+from django import forms
+
+from new_fortis_tools_20190625 import read_jxl_info
+from templatetags.auth_extras import *
+from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
+    default_all_profiles_str, default_exporting_types_options
 
 
 class SurveyFileAutomationForm(forms.ModelForm):
@@ -11,6 +17,17 @@ class SurveyFileAutomationForm(forms.ModelForm):
     # description = forms.CharField(widget=forms.Textarea(attrs={'rows': 5,
     #                                                            'placeholder': 'Simple Description'}),
     #                               required=False)
+    notify_surveyor = forms.BooleanField(initial=False, required=False)
+    notify_pm = forms.BooleanField(initial=False, required=False)
+    create_gis_data = forms.BooleanField(initial=False, required=False)
+    create_client_report = forms.BooleanField(initial=False, required=False)
+    exporting_profile_no = forms.CharField(initial=default_all_profiles_str, required=False,
+                                           label='Leave it as it is, or type Exporting Profile No, e.g. 1, 2, 5')
+    exporting_types_selected = forms.MultipleChoiceField(choices=exporting_types_options,
+                                                         initial=tuple(default_exporting_types_options),
+                                                         widget=forms.widgets.CheckboxSelectMultiple,
+                                                         required=False)
+    overwriting = forms.BooleanField(initial=True, required=False)
 
     class Meta:
         model = SurveyFileAutomation
@@ -26,18 +43,40 @@ class SurveyFileAutomationForm(forms.ModelForm):
         self.user = kwargs.pop('user')
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
 
+        if not is_automation_admin_group(self.user) and not self.user.is_superuser:
+
+            self.readonly_fields = [
+                  'notify_surveyor', 'notify_pm',
+                  'create_gis_data', 'create_client_report',
+                  'exporting_profile_no',
+                  'exporting_types_selected',
+                  'overwriting']
+
+            for field in self.readonly_fields:
+                self.fields[field].widget = forms.HiddenInput()
+                self.fields[field].label = False
+                # if type(self.fields[field]) == forms.BooleanField:
+                #     self.fields[field].initial = False
+                # else:
+                #     self.fields[field].initial = ''
+                # print('Hiding {}, set to {}'.format(field, self.fields[field].initial))
+
+
+        else:
+            self.readonly_fields = []
+
     def clean(self):
         cleaned_data = self.cleaned_data
-        print(cleaned_data)
         document_name = str(cleaned_data['document'])
-        print(document_name)
+        print('document name', document_name)
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
-        print(document_name, type(document_name),
-            extract_input_values, type(extract_input_values),
-              utm_sr_name, type(utm_sr_name),
-              scale_value, type(scale_value))
+        # print(document_name, type(document_name),
+        #     extract_input_values, type(extract_input_values),
+        #       utm_sr_name, type(utm_sr_name),
+        #       scale_value, type(scale_value))
+        print('cleaned data', cleaned_data)
 
         if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
                 or document_name[-4:].lower() == '.csv':
@@ -46,6 +85,9 @@ class SurveyFileAutomationForm(forms.ModelForm):
                 self.add_error('utm_sr_name', 'Please select UTM name')
             if scale_value is None:
                 self.add_error('scale_value', 'Please type scale factor')
+
+        print('cleaning is done')
+
         return cleaned_data
 
     # def clean_utm_sr_name(self):
@@ -92,6 +134,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
     #         self.cleaned_data['scale_value'] = scale_value
 
     def save(self):
+        print('Start saving in form')
         user = self.user
         new_jxl_obj = super(SurveyFileAutomationForm, self).save(commit=False)
         document_path = str(new_jxl_obj.document.file.name)

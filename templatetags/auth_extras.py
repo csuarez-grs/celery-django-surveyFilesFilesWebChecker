@@ -12,9 +12,9 @@ def is_gis_group(user):
     return True if group in user.groups.all() else False
 
 
-@register.filter(name='is_search_group')
-def is_search_group(user):
-    group = Group.objects.get(name='search')
+@register.filter(name='is_automation_admin_group')
+def is_automation_admin_group(user):
+    group = Group.objects.get(name='automation_admin_group')
     return True if group in user.groups.all() else False
 
 @register.filter(name='get_file_name')

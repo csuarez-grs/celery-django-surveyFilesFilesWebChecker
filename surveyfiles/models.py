@@ -20,7 +20,8 @@ from new_fortis_tools_20190625 import project_coordinates_list, default_exportin
 from new_fortis_tools_20190625 import read_jxl_info
 
 exporting_types_options = [(item, item) for item in default_exporting_types]
-
+default_exporting_types_options = [c[0] for c in exporting_types_options]
+default_all_profiles_str = 'All Profiles'
 
 def validate_jxl_content(document):
     document_path = str(document.file.name)
@@ -196,12 +197,12 @@ class SurveyFileAutomation(models.Model):
                                                default=False, blank=False, null=False)
     exporting_types_selected = MultiSelectField(db_column='Select Export Types', max_length=255,
                                                 choices=exporting_types_options,
-                                                default=[c[0] for c in exporting_types_options],
+                                                default=default_exporting_types_options,
                                                 verbose_name='Select Export Types')
     exporting_profile_no = models.CharField(db_column='Type Exporting Profile No',
                                             max_length=255,
                                             verbose_name='Leave it as it is, or type Exporting Profile No, e.g. 1, 2, 5',
-                                            blank=False, null=False, default='All Profiles')
+                                            blank=False, null=False, default=default_all_profiles_str)
     overwriting = models.BooleanField(verbose_name='Overwritting existing data',
                                       default=True, blank=False, null=False)
     uploaded_time = models.DateTimeField(verbose_name='Uploaded Time', blank=False, null=False)

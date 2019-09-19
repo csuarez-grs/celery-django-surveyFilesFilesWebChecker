@@ -59,11 +59,16 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         kwargs.update({'user': self.request.user})
         return kwargs
 
+    def form_invalid(self, form):
+        print('form is not valid: {}'.format(self.get_context_data(form=form)))
+        return self.render_to_response(self.get_context_data(form=form))
+
     def form_valid(self, form):
+        print('validating form')
         print('user', self.request.user.username)
-        print('saving in view')
+        print('call saving in form')
         form.save()
-        print('saved in view successfully')
+        print('saved in form successfully')
         print(self.request.FILES[u'document'])
         return super(CreateSurveyFileAutomationView, self).form_valid(form)
 
