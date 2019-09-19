@@ -10,6 +10,9 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import models
+
+from SurveyFilesWebChecker.settings import logger_model
+
 # Create your models here.
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
@@ -43,7 +46,7 @@ def validate_jxl_content(document):
 def validate_jxl_pattern(document):
     document_name = os.path.basename(str(document.file.name))
     document_ext = document_name[-4:].lower()
-    print('checking {}: type-{} ext-{}'.format(document_name, type(document_name), document_ext))
+    logger_model.info('checking {}: type-{} ext-{}'.format(document_name, type(document_name), document_ext))
 
     if document_ext not in ['.csv', '.jxl']:
         raise ValidationError(
@@ -62,7 +65,7 @@ def validate_jxl_pattern(document):
     else:
         group_matched = list(re.finditer(jxl_name_pattern, document_name))[0]
         groups_dict = group_matched.groupdict()
-        print('{}'.format(groups_dict))
+        logger_model.info('{}'.format(groups_dict))
 
     job_no = groups_dict['job_no']
     # site_no = int(groups_dict['site_no'])

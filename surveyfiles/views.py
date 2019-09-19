@@ -16,9 +16,8 @@ from .forms import SurveyFileAutomationForm
 from .models import SurveyFileAutomation
 from .tables import SurveyFileAutomationTable
 from .tasks import *
-import logging
 
-logger = logging.getLogger('request')
+from SurveyFilesWebChecker.settings import logger_request
 
 
 class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, ListView):
@@ -63,16 +62,17 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         return kwargs
 
     def form_invalid(self, form):
-        logger.info('form is not valid: {}'.format(self.get_context_data(form=form)))
+        logger_request.info('form is not valid: {}'.format(self.get_context_data(form=form)),
+                            extra={'username' : self.request.user.username})
         return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
-        logger.info('validating form')
-        logger.info('user: {}'.format(self.request.user.username))
-        logger.info('call saving in form')
+        logger_request.info('validating form', extra={'username' : self.request.user.username})
+        logger_request.info('user: {}'.format(self.request.user.username), extra={'username' : self.request.user.username})
+        logger_request.info('call saving in form', extra={'username' : self.request.user.username})
         form.save()
-        logger.info('saved in form successfully')
-        logger.info('Document: {}'.format(self.request.FILES[u'document']))
+        logger_request.info('saved in form successfully', extra={'username' : self.request.user.username})
+        logger_request.info('Document: {}'.format(self.request.FILES[u'document']), extra={'username' : self.request.user.username})
         return super(CreateSurveyFileAutomationView, self).form_valid(form)
 
         # return self.render_to_response(self.get_context_data(
@@ -80,8 +80,9 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         #     uploaded_file=self.request.FILES[u'document']))
 
     def get_success_message(self, cleaned_data):
-        logger.info('cleaned data: {}'.format(cleaned_data))
-        logger.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)))
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username' : self.request.user.username})
+        logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
+                            extra={'username' : self.request.user.username})
         uploader_usernane = self.request.user.username
         job_no = self.object.job_no
         site_no = self.object.site_no

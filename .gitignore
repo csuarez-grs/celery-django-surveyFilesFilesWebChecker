@@ -4,3 +4,4 @@ checker-env/
 media/*
 migrations/
 db.sqlite3
+logs/

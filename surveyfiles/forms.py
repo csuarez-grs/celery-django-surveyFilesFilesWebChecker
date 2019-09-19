@@ -4,15 +4,16 @@ from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
     default_all_profiles_str, default_exporting_types_options
+
+from SurveyFilesWebChecker.settings import logger_request
 from django import forms
 
+from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
     default_all_profiles_str, default_exporting_types_options
-import logging
 
-logger = logging.getLogger('request')
 
 class SurveyFileAutomationForm(forms.ModelForm):
     # site_no = forms.DecimalField(required=True, min_value=1)
@@ -48,11 +49,11 @@ class SurveyFileAutomationForm(forms.ModelForm):
         if not is_automation_admin_group(self.user) and not self.user.is_superuser:
 
             self.readonly_fields = [
-                  'notify_surveyor', 'notify_pm',
-                  'create_gis_data', 'create_client_report',
-                  'exporting_profile_no',
-                  'exporting_types_selected',
-                  'overwriting']
+                'notify_surveyor', 'notify_pm',
+                'create_gis_data', 'create_client_report',
+                'exporting_profile_no',
+                'exporting_types_selected',
+                'overwriting']
 
             for field in self.readonly_fields:
                 self.fields[field].widget = forms.HiddenInput()
@@ -70,7 +71,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
     def clean(self):
         cleaned_data = self.cleaned_data
         document_name = str(cleaned_data['document'])
-        logger.info('document name: {}'.format(document_name))
+        logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
@@ -78,17 +79,17 @@ class SurveyFileAutomationForm(forms.ModelForm):
         #     extract_input_values, type(extract_input_values),
         #       utm_sr_name, type(utm_sr_name),
         #       scale_value, type(scale_value))
-        logger.info('cleaned data: {}'.format(cleaned_data))
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 
         if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
                 or document_name[-4:].lower() == '.csv':
-            logger.info('Checking if UTM and scale are entered.')
+            logger_request.info('Checking if UTM and scale are entered.', extra={'username': self.user.username})
             if utm_sr_name is None:
                 self.add_error('utm_sr_name', 'Please select UTM name')
             if scale_value is None:
                 self.add_error('scale_value', 'Please type scale factor')
 
-        logger.info('cleaning is done')
+        logger_request.info('cleaning is done', extra={'username': self.user.username})
 
         return cleaned_data
 
@@ -136,11 +137,11 @@ class SurveyFileAutomationForm(forms.ModelForm):
     #         self.cleaned_data['scale_value'] = scale_value
 
     def save(self):
-        logger.info('Start saving in form')
+        logger_request.info('Start saving in form', extra={'username': self.user.username})
         user = self.user
         new_jxl_obj = super(SurveyFileAutomationForm, self).save(commit=False)
         document_path = str(new_jxl_obj.document.file.name)
-        logger.info('Document path: {}'.format(document_path))
+        logger_request.info('Document path: {}'.format(document_path), extra={'username': self.user.username})
         document_name = os.path.basename(document_path)
         if document_name[-4:].lower() == '.jxl' and os.path.isfile(document_path):
             utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)
@@ -154,8 +155,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         new_jxl_obj.uploader = user.username
         new_jxl_obj.uploader_email = user.email
 
-        logger.info('Saving in form')
+        logger_request.info('Saving in form', extra={'username': self.user.username})
         new_jxl_obj.save()
-        logger.info('Saving in form successfully')
+        logger_request.info('Saving in form successfully', extra={'username': self.user.username})
 
         return new_jxl_obj

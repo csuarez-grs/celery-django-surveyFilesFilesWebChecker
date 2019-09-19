@@ -277,7 +277,7 @@ LOGGING = {
     "disable_existing_loggers": True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(username)s %(message)s'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -304,6 +304,15 @@ LOGGING = {
             'filename': 'logs/django_request.log',
             'formatter': 'verbose',
         },
+
+        'model_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'filename': 'logs/django_model.log',
+            'formatter': 'simple',
+        },
     },
     "loggers": {
         # "django_python3_ldap": {
@@ -312,6 +321,11 @@ LOGGING = {
         # },
         'request': {
             'handlers': ['request_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'model': {
+            'handlers': ['model_handler'],
             'level': 'DEBUG',
             'propagate': False,
         },
@@ -336,3 +350,9 @@ CELERY_QUEUES = (
     Queue('default', Exchange('default'), routing_key='default'),
     Queue('production', Exchange('production'), routing_key='production'),
 )
+
+
+import logging
+
+logger_request = logging.getLogger('request')
+logger_model = logging.getLogger('model')
