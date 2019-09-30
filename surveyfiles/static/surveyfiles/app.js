@@ -48,6 +48,7 @@ function cardsColoring() {
     });
 
 }
+
 function tableColoring() {
 
     $("tr").each(function () {
@@ -117,3 +118,22 @@ function alerting() {
 
     })
 }
+
+
+$(document).ready(function () {
+
+    $("#id_document").on("change", function () {
+        var doc_input = document.getElementById('id_document');
+        var fileName = doc_input.value;
+        var fileExt = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        console.log(fileExt);
+        if (fileExt === 'jxl') {
+            $("#id_extract_input_values").prop('checked', true);
+            $("#id_extract_input_values").prop('disabled', false);
+        } else {
+            $("#id_extract_input_values").prop('checked', false);
+            $("#id_extract_input_values").prop('disabled', true);
+        }
+
+    });
+});
