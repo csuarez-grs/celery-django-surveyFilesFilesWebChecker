@@ -70,6 +70,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = self.cleaned_data
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         document_name = str(cleaned_data['document'])
         logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
         extract_input_values = cleaned_data['extract_input_values']
