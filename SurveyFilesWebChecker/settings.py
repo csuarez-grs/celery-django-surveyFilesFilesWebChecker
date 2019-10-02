@@ -11,17 +11,17 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import sys
 import time
 
 from decouple import config
-import sys
+
 fortis_tools_path = r'\\grs.com\dfs\GIS\GIS_Main\06_Tools\04_ToolBoxes\PythonToolBox\FortisProjectAutomation'
 if fortis_tools_path not in sys.path:
     sys.path.append(fortis_tools_path)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -36,7 +36,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS')
-
 
 # Application definition
 
@@ -59,10 +58,9 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'users.LDAPUser'
 
-
 AUTHENTICATION_BACKENDS = (
-'django_python3_ldap.auth.LDAPBackend',
-'django.contrib.auth.backends.ModelBackend',
+    'django_python3_ldap.auth.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 # The URL of the LDAP server.
@@ -227,7 +225,6 @@ DATABASE_ROUTERS = [
     'routers.SurveyFilesRouter'
 ]
 
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -246,7 +243,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -259,7 +255,6 @@ USE_I18N = True
 USE_L10N = False
 
 USE_TZ = False
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -276,6 +271,9 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
     'formatters': {
+        'verbose_no_user': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(username)s %(message)s'
         },
@@ -284,12 +282,12 @@ LOGGING = {
         },
     },
     "handlers": {
-        # "console": {
-        #     "level": "DEBUG",
-        #     "class": "logging.StreamHandler",
-        #     "formatter": "verbose",
-        #     "stream": "ext://sys.stdout"
-        # },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose_no_user",
+            "stream": "ext://sys.stdout"
+        },
         # 'file': {
         #     'level': 'DEBUG',
         #     'class': 'logging.FileHandler',
@@ -313,6 +311,15 @@ LOGGING = {
             'filename': 'logs/django_model.log',
             'formatter': 'simple',
         },
+
+        'ldap_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'filename': 'logs/ldap.log',
+            'formatter': 'verbose_no_user',
+        },
     },
     "loggers": {
         # "django_python3_ldap": {
@@ -326,6 +333,11 @@ LOGGING = {
         },
         'model': {
             'handlers': ['model_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django_python3_ldap': {
+            'handlers': ['ldap_handler', 'console'],
             'level': 'DEBUG',
             'propagate': False,
         },
@@ -351,8 +363,8 @@ CELERY_QUEUES = (
     Queue('production', Exchange('production'), routing_key='production'),
 )
 
-
 import logging
 
 logger_request = logging.getLogger('request')
 logger_model = logging.getLogger('model')
+logger_ldap = logging.getLogger('django_python3_ldap')
