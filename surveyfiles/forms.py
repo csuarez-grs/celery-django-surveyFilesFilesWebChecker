@@ -46,27 +46,27 @@ class SurveyFileAutomationForm(forms.ModelForm):
         self.user = kwargs.pop('user')
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
 
-        if not is_automation_admin_group(self.user) and not self.user.is_superuser:
-
-            self.readonly_fields = [
-                'notify_surveyor', 'notify_pm',
-                'create_gis_data', 'create_client_report',
-                'exporting_profile_no',
-                'exporting_types_selected',
-                'overwriting']
-
-            for field in self.readonly_fields:
-                self.fields[field].widget = forms.HiddenInput()
-                self.fields[field].label = False
-                # if type(self.fields[field]) == forms.BooleanField:
-                #     self.fields[field].initial = False
-                # else:
-                #     self.fields[field].initial = ''
-                # print('Hiding {}, set to {}'.format(field, self.fields[field].initial))
-
-
-        else:
-            self.readonly_fields = []
+        # if not is_automation_admin_group(self.user) and not self.user.is_superuser:
+        #
+        #     self.readonly_fields = [
+        #         'notify_surveyor', 'notify_pm',
+        #         'create_gis_data', 'create_client_report',
+        #         'exporting_profile_no',
+        #         'exporting_types_selected',
+        #         'overwriting']
+        #
+        #     for field in self.readonly_fields:
+        #         self.fields[field].widget = forms.HiddenInput()
+        #         self.fields[field].label = False
+        #         # if type(self.fields[field]) == forms.BooleanField:
+        #         #     self.fields[field].initial = False
+        #         # else:
+        #         #     self.fields[field].initial = ''
+        #         # print('Hiding {}, set to {}'.format(field, self.fields[field].initial))
+        #
+        #
+        # else:
+        #     self.readonly_fields = []
 
     def clean(self):
         cleaned_data = self.cleaned_data
