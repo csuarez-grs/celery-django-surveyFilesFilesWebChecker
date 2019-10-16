@@ -145,7 +145,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
         logger_request.info('Document path: {}'.format(document_path), extra={'username': self.user.username})
         document_name = os.path.basename(document_path)
         if document_name[-4:].lower() == '.jxl' and os.path.isfile(document_path):
-            utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)
+            utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)[0:2]
             if new_jxl_obj.utm_sr_name is None and utm_sr is not None:
                 new_jxl_obj.utm_sr_name = utm_sr
             if new_jxl_obj.scale_value is None and scale_value is not None:
