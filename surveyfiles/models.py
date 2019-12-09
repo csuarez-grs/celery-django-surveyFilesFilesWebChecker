@@ -31,7 +31,7 @@ def validate_jxl_content(document):
     document_name = os.path.basename(document_path)
     document_ext = document_name[-4:].lower()
 
-    if document_ext == ',jxl':
+    if document_ext == '.jxl':
 
         try:
             read_jxl_info(document_path, return_utm_name=True)
