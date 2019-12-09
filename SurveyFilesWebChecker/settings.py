@@ -282,12 +282,12 @@ LOGGING = {
         },
     },
     "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose_no_user",
-            "stream": "ext://sys.stdout"
-        },
+        # "console": {
+        #     "level": "DEBUG",
+        #     "class": "logging.StreamHandler",
+        #     "formatter": "verbose_no_user",
+        #     "stream": "ext://sys.stdout"
+        # },
         # 'file': {
         #     'level': 'DEBUG',
         #     'class': 'logging.FileHandler',
@@ -337,7 +337,7 @@ LOGGING = {
             'propagate': False,
         },
         'django_python3_ldap': {
-            'handlers': ['ldap_handler', 'console'],
+            'handlers': ['ldap_handler'],
             'level': 'DEBUG',
             'propagate': False,
         },
