@@ -180,7 +180,7 @@ class SurveyFileAutomation(models.Model):
     document = models.FileField(upload_to=get_upload_path,
                                 verbose_name='Document',
                                 blank=False, null=False,
-                                validators=[validate_jxl_pattern, validate_jxl_content],
+                                validators=[validate_jxl_pattern],
                                 storage=OverwriteStorage())
     site_no = MinMaxInteger(db_column='Site No', blank=False, null=False, min_value=1)
     extract_input_values = models.BooleanField(verbose_name='Extract UTM name and scale factor value from jxl file',
