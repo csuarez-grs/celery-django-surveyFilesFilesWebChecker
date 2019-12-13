@@ -12,13 +12,10 @@ function cardsColoring() {
 
         if (qc_passed == null) {
             $(this).addClass('new');
-        }
-
-        else {
+        } else {
             if (qc_passed.text().indexOf('Succeeded') >= 0) {
                 $(this).addClass('succeeded');
-            }
-            else if (qc_passed.text().indexOf('Failed') >= 0) {
+            } else if (qc_passed.text().indexOf('Failed') >= 0) {
 
                 $(this).addClass('failed');
 
@@ -32,13 +29,10 @@ function cardsColoring() {
 
         if (qc_passed == null) {
             $(this).addClass('new');
-        }
-
-        else {
+        } else {
             if (qc_passed.text().indexOf('Succeeded') >= 0) {
                 $(this).addClass('succeeded');
-            }
-            else if (qc_passed.text().indexOf('Failed') >= 0) {
+            } else if (qc_passed.text().indexOf('Failed') >= 0) {
 
                 $(this).addClass('failed');
 
@@ -56,13 +50,10 @@ function tableColoring() {
 
         if (qc_passed.text().indexOf('—') >= 0) {
             $(this).addClass('new');
-        }
-
-        else {
+        } else {
             if (qc_passed.text().indexOf('Succeeded') >= 0) {
                 $(this).addClass('succeeded');
-            }
-            else if (qc_passed.text().indexOf('Failed') >= 0) {
+            } else if (qc_passed.text().indexOf('Failed') >= 0) {
 
                 $(this).addClass('failed');
 
@@ -136,4 +127,13 @@ $(document).ready(function () {
         }
 
     });
+
+    $("#id_create_client_report").on("change", function () {
+        var create_report_checked = $('#id_create_client_report').prop('checked');
+        console.log(create_report_checked);
+        if (create_report_checked) {
+            $("#id_create_gis_data").prop('checked', true);
+        }
+    })
+
 });
