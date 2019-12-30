@@ -51,7 +51,7 @@
                             <p class="card-text">{{ object.document|get_file_name }}</p>
                             <p class="card-text">{{ object.uploaded_time|date:'Y-m-d H:i:s' }}</p>
                             <p class="qc-passed-text">QC: {{ object.qc_passed }}</p>
-                            <p class="qc-passed-text">Automation: {{ object.automation_status }}</p>
+                            <p class="automation-status-text">Automation: {{ object.automation_status }}</p>
                         </div>
                     </div>
                 {% endif %}

@@ -5,55 +5,68 @@ $(function () {
     // alerting();
 });
 
+function setColorClass(qc_passed, automation_status) {
+
+    if ((automation_status.indexOf('None') >= 0) || (automation_status.indexOf('—') >= 0)) {
+        if ((qc_passed.indexOf('None') >= 0) || (qc_passed.indexOf('—') >= 0)) {
+            return 'new';
+        } else {
+            if (qc_passed.indexOf('Succeeded') >= 0) {
+                return 'succeeded';
+            } else if (qc_passed.indexOf('Failed') >= 0) {
+                return 'failed';
+            } else if (qc_passed.indexOf('Running') >= 0) {
+                return 'blinking';
+            } else {
+                return null
+            }
+        }
+    } else {
+        if (automation_status.indexOf('Running') >= 0) {
+            return 'blinking';
+        } else if (automation_status.indexOf('Success') >= 0) {
+            return 'succeeded';
+        } else if (automation_status.indexOf('Failure') >= 0) {
+            return 'failed';
+        } else {
+            return null
+        }
+    }
+}
+
 function cardsColoring() {
 
     $("div.file-card").each(function () {
-        var qc_passed = $(this).find("p.qc-passed-text");
+        var qc_passed = $(this).find("p.qc-passed-text").text();
+        var automation_status = $(this).find("p.automation-status-text").text();
 
-        if (qc_passed == null) {
-            $(this).addClass('new');
-        } else {
-            if (qc_passed.text().indexOf('Succeeded') >= 0) {
-                $(this).addClass('succeeded');
-            } else if (qc_passed.text().indexOf('Failed') >= 0) {
+        var colorClass = setColorClass(qc_passed, automation_status);
 
-                $(this).addClass('failed');
-
-            }
+        if (colorClass != null) {
+            $(this).addClass(colorClass);
         }
-
     });
-
-    $("tr").each(function () {
-        var qc_passed = $(this).find("td.qc-passed");
-
-        if (qc_passed == null) {
-            $(this).addClass('new');
-        } else {
-            if (qc_passed.text().indexOf('Succeeded') >= 0) {
-                $(this).addClass('succeeded');
-            } else if (qc_passed.text().indexOf('Failed') >= 0) {
-
-                $(this).addClass('failed');
-
-            }
-        }
-
-    });
-
 }
 
 function tableColoring() {
 
     $("tr").each(function () {
-        var qc_passed = $(this).find("td.qc_passed");
+        var qc_passed = $(this).find("td.qc_passed").text();
+        var automation_status = $(this).find("td.automation_status").text();
 
-        if (qc_passed.text().indexOf('—') >= 0) {
+
+        var colorClass = setColorClass(qc_passed, automation_status);
+
+        if (colorClass != null) {
+            $(this).addClass(colorClass);
+        }
+
+        if (qc_passed.indexOf('—') >= 0) {
             $(this).addClass('new');
         } else {
-            if (qc_passed.text().indexOf('Succeeded') >= 0) {
+            if (qc_passed.indexOf('Succeeded') >= 0) {
                 $(this).addClass('succeeded');
-            } else if (qc_passed.text().indexOf('Failed') >= 0) {
+            } else if (qc_passed.indexOf('Failed') >= 0) {
 
                 $(this).addClass('failed');
 
