@@ -7,6 +7,7 @@ from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_
 
 from SurveyFilesWebChecker.settings import logger_request
 from django import forms
+import re
 
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
@@ -151,6 +152,58 @@ class SurveyFileAutomationForm(forms.ModelForm):
                     new_jxl_obj.utm_sr_name = utm_sr
                 if new_jxl_obj.scale_value is None and scale_value is not None:
                     new_jxl_obj.scale_value = scale_value
+            except Exception as e:
+                logger_request.warning('Failed to extract utm and scale from {}:\n{}'.format(document_path, str(e)),
+                                       extra={'username': self.user.username})
+
+        job_no = validate_jxl_pattern(new_jxl_obj.document)
+        new_jxl_obj.job_no = job_no
+        new_jxl_obj.uploader = user.username
+        new_jxl_obj.uploader_email = user.email
+
+        logger_request.info('Saving in form', extra={'username': self.user.username})
+        new_jxl_obj.save()
+        logger_request.info('Saving in form successfully', extra={'username': self.user.username})
+
+        return new_jxl_obj
+
+
+class PPPFileAutomationForm(forms.ModelForm):
+    overwriting = forms.BooleanField(initial=True, required=False)
+
+    class Meta:
+        model = SurveyFileAutomation
+        fields = ['document', 'site_no',
+                  'target_field_folder',
+                  'overwriting']
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        super(PPPFileAutomationForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+        document_name = str(cleaned_data['document'])
+        logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+
+        logger_request.info('cleaning is done', extra={'username': self.user.username})
+
+        return cleaned_data
+
+    def save(self):
+        logger_request.info('Start saving in form', extra={'username': self.user.username})
+        user = self.user
+        new_jxl_obj = super(PPPFileAutomationForm, self).save(commit=False)
+        document_path = str(new_jxl_obj.document.file.name)
+        logger_request.info('Document path: {}'.format(document_path), extra={'username': self.user.username})
+        document_name = os.path.basename(document_path)
+        if document_name[-4:].lower() == '.jxl' and os.path.isfile(document_path):
+            try:
+                utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)[0:2]
+                new_jxl_obj.utm_sr_name = utm_sr
+                new_jxl_obj.scale_value = scale_value
             except Exception as e:
                 logger_request.warning('Failed to extract utm and scale from {}:\n{}'.format(document_path, str(e)),
                                        extra={'username': self.user.username})

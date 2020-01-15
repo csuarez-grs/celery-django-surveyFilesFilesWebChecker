@@ -19,12 +19,28 @@ from django.utils.translation import gettext_lazy as _
 from multiselectfield import MultiSelectField
 
 from core.models import GRSJobInfo
+
 from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types
 from new_fortis_tools_20190625 import read_jxl_info
 
 exporting_types_options = [(item, item) for item in default_exporting_types]
 default_exporting_types_options = [c[0] for c in exporting_types_options]
 default_all_profiles_str = 'All Profiles'
+
+
+def validate_target_field_folder(target_field_folder):
+    if not os.path.isdir(target_field_folder):
+        raise ValidationError(
+                _('%(target_field_folder)s is not valid folder !!!'),
+                params={'target_field_folder': target_field_folder}
+            )
+    elif len(os.listdir(target_field_folder)) == 0:
+        raise ValidationError(
+                _('%(target_field_folder)s is empty folder !!!'),
+                params={'target_field_folder': target_field_folder}
+            )
+
+
 
 def validate_jxl_content(document):
     document_path = str(document.file.name)
@@ -228,7 +244,11 @@ class SurveyFileAutomation(models.Model):
     ald_csv_path = models.TextField(db_column='ALD CSV Path', blank=True, null=True)
     wgs84_csv = models.TextField(db_column='WGS84 CSV', blank=True, null=True)
     kmz_path = models.TextField(db_column='KMZ Path', blank=True, null=True)
+    unit_report_path = models.TextField(db_column='Unit Report', blank=True, null=True)
     errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
+    target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
+                                           validators=[validate_target_field_folder])
+    transmittals_folder = models.CharField(db_column='Transmittals Folder', max_length=255, blank=True, null=True)
     done_with_automation = models.CharField(db_column='Done With Automation', max_length=1
                                             , blank=True, null=True,
                                             choices=(('Y', 'Yes'), ('N', 'No'), ('', 'Blank')))

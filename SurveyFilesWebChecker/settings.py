@@ -361,7 +361,10 @@ CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
     Queue('default', Exchange('default'), routing_key='default'),
     Queue('production', Exchange('production'), routing_key='production'),
+    Queue('development', Exchange('development'), routing_key='development'),
 )
+
+task_queue = config('QUEUE_NAME')
 
 import logging
 

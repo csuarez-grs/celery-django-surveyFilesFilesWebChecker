@@ -12,12 +12,12 @@ from django_tables2.views import SingleTableMixin
 from pure_pagination.mixins import PaginationMixin
 
 from .filters import SurveyFileAutomationFilter
-from .forms import SurveyFileAutomationForm
+from .forms import SurveyFileAutomationForm, PPPFileAutomationForm
 from .models import SurveyFileAutomation
 from .tables import SurveyFileAutomationTable
 from .tasks import *
 
-from SurveyFilesWebChecker.settings import logger_request
+from SurveyFilesWebChecker.settings import logger_request, task_queue
 
 
 class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, ListView):
@@ -30,7 +30,7 @@ class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, L
 
     def get_queryset(self):
         valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
-                         if os.path.isfile(object.document.path)]
+                         if os.path.isfile(object.document.path) and object.target_field_folder is None]
         return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
 
 
@@ -43,7 +43,7 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
 
     def get_queryset(self):
         valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
-                         if os.path.isfile(object.document.path)]
+                         if os.path.isfile(object.document.path) and object.target_field_folder is None]
         return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
 
 
@@ -63,16 +63,18 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
 
     def form_invalid(self, form):
         logger_request.info('form is not valid: {}'.format(self.get_context_data(form=form)),
-                            extra={'username' : self.request.user.username})
+                            extra={'username': self.request.user.username})
         return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
-        logger_request.info('validating form', extra={'username' : self.request.user.username})
-        logger_request.info('user: {}'.format(self.request.user.username), extra={'username' : self.request.user.username})
-        logger_request.info('call saving in form', extra={'username' : self.request.user.username})
+        logger_request.info('validating form', extra={'username': self.request.user.username})
+        logger_request.info('user: {}'.format(self.request.user.username),
+                            extra={'username': self.request.user.username})
+        logger_request.info('call saving in form', extra={'username': self.request.user.username})
         form.save()
-        logger_request.info('saved in form successfully', extra={'username' : self.request.user.username})
-        logger_request.info('Document: {}'.format(self.request.FILES[u'document']), extra={'username' : self.request.user.username})
+        logger_request.info('saved in form successfully', extra={'username': self.request.user.username})
+        logger_request.info('Document: {}'.format(self.request.FILES[u'document']),
+                            extra={'username': self.request.user.username})
         return super(CreateSurveyFileAutomationView, self).form_valid(form)
 
         # return self.render_to_response(self.get_context_data(
@@ -80,9 +82,9 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         #     uploaded_file=self.request.FILES[u'document']))
 
     def get_success_message(self, cleaned_data):
-        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username' : self.request.user.username})
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.request.user.username})
         logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
-                            extra={'username' : self.request.user.username})
+                            extra={'username': self.request.user.username})
         uploader_usernane = self.request.user.username
         job_no = self.object.job_no
         site_no = self.object.site_no
@@ -93,7 +95,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
         args = (uploader_usernane, job_no, document_name, uploaded_time_str)
         notify_uploading.si(*args) \
-            .set(queue='production') \
+            .set(queue=task_queue) \
             .apply_async()
         # uploader = self.object.uploader
         # uploader_email = self.object.uploader_email
@@ -108,7 +110,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             create_gis_data = True
         else:
             create_gis_data = False
-            
+
         if self.object.create_client_report == 1:
             create_client_report = True
         else:
@@ -152,7 +154,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                 exporting_types, exporting_profiles,
                 overwriting, notify_surveyor, notify_pm, uploading_info)
 
-        quality_check_jxl_task = quality_check_jxl.si(*args).set(queue='production')
+        quality_check_jxl_task = quality_check_jxl.si(*args).set(queue=task_queue)
         quality_check_jxl_task.apply_async()
 
         return self.success_message % dict(
@@ -175,3 +177,89 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
 
     # def get_success_url(self, *args, **kwargs):
     #     return reverse('jxlfiles:jxl_list_view')
+
+
+class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
+    model = SurveyFileAutomation
+    form_class = PPPFileAutomationForm
+    template_name = 'surveyfiles/ppp_automation.html'
+    success_url = reverse_lazy('surveyfiles:ppp_automation_view')
+    # success_url = '/success/'
+    success_message = "%(file_name)s - %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
+                      " Please wait for QC emails"
+
+    def get_form_kwargs(self):
+        kwargs = super(CreatePPPFileAutomationView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_invalid(self, form):
+        logger_request.info('form is not valid: {}'.format(self.get_context_data(form=form)),
+                            extra={'username': self.request.user.username})
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def form_valid(self, form):
+        logger_request.info('validating form', extra={'username': self.request.user.username})
+        logger_request.info('user: {}'.format(self.request.user.username),
+                            extra={'username': self.request.user.username})
+        logger_request.info('call saving in form', extra={'username': self.request.user.username})
+        form.save()
+        logger_request.info('saved in form successfully', extra={'username': self.request.user.username})
+        logger_request.info('Document: {}'.format(self.request.FILES[u'document']),
+                            extra={'username': self.request.user.username})
+        return super(CreatePPPFileAutomationView, self).form_valid(form)
+
+        # return self.render_to_response(self.get_context_data(
+        #     form=form,
+        #     uploaded_file=self.request.FILES[u'document']))
+
+    def get_success_message(self, cleaned_data):
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.request.user.username})
+        logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
+                            extra={'username': self.request.user.username})
+        uploader_usernane = self.request.user.username
+        job_no = self.object.job_no
+        site_no = self.object.site_no
+        utm_sr_name = self.object.utm_sr_name
+        scale_value = self.object.scale_value
+        uploaded_file = self.object.document.file.name
+        document_name = os.path.basename(uploaded_file)
+        uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
+        args = (uploader_usernane, job_no, document_name, uploaded_time_str)
+        notify_uploading.si(*args) \
+            .set(queue=task_queue) \
+            .apply_async()
+        tracking_id = self.object.tracking_id
+        target_field_folder = self.object.target_field_folder
+
+        if self.object.overwriting == 1:
+            overwriting = True
+        else:
+            overwriting = False
+
+        uploading_info = [
+            self.object.job_no,
+            self.object.site_no,
+            self.object.uploader,
+            self.object.uploader_email,
+            self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S'),
+            self.object.project_manager,
+            self.object.project_manager_email,
+            self.object.utm_sr_name,
+            self.object.scale_value,
+        ]
+
+        args = (uploaded_file, tracking_id, overwriting, target_field_folder, utm_sr_name, scale_value,
+                uploading_info, job_no, site_no)
+
+        ppp_automation_task = ppp_automation.si(*args).set(queue=task_queue)
+        ppp_automation_task.apply_async()
+
+        return self.success_message % dict(
+            cleaned_data,
+            file_name=os.path.basename(self.object.document.file.name),
+            site_no=site_no,
+            utm_sr_name=utm_sr_name,
+            scale_value=scale_value,
+            # uploader=self.object.uploader
+        )
