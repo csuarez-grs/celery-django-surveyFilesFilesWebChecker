@@ -20,8 +20,8 @@ from multiselectfield import MultiSelectField
 
 from core.models import GRSJobInfo
 
-from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types
-from new_fortis_tools_20190625 import read_jxl_info
+from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info,\
+    parse_surveyor_from_file_name
 
 exporting_types_options = [(item, item) for item in default_exporting_types]
 default_exporting_types_options = [c[0] for c in exporting_types_options]
@@ -203,7 +203,7 @@ class SurveyFileAutomation(models.Model):
                                                default=False, blank=False, null=False)
     utm_sr_name = models.CharField(verbose_name='Project System Name', max_length=100, blank=True, null=True,
                                    choices=((item, item) for item in project_coordinates_list))
-    scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True, min_value=0.0, max_value=1.0)
+    scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True, min_value=0.0, max_value=1.5)
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
                                           verbose_name='Create GIS datasets',
                                           default=False, blank=False, null=False)
@@ -228,8 +228,10 @@ class SurveyFileAutomation(models.Model):
     uploader = models.CharField(max_length=30, verbose_name='Uploader', blank=False, null=False)
     uploader_email = models.EmailField(max_length=50, verbose_name='Uploader Email', blank=False, null=False)
     job_description = models.CharField(db_column='Job Description', max_length=500, blank=True, null=True)
-    project_manager = models.CharField(db_column='Project Manager', max_length=255, blank=True, null=True)
-    project_manager_email = models.CharField(db_column='Project Manager Email', max_length=255, blank=True, null=True)
+    project_manager = models.CharField(db_column='Project Manager', max_length=50, blank=True, null=True)
+    project_manager_email = models.CharField(db_column='Project Manager Email', max_length=50, blank=True, null=True)
+    surveyor_name = models.CharField(db_column='Surveyor', max_length=50, blank=True, null=True)
+    surveyor_email = models.CharField(db_column='Surveyor Email', max_length=50, blank=True, null=True)
     qc_time = models.DateTimeField(verbose_name='Check Time', blank=True, null=True)
     qc_passed = models.CharField(verbose_name='QC Passed', max_length=30, blank=True, null=True)
     jxl_errors = models.CharField(max_length=500, verbose_name='JXL Errors', blank=True, null=True)
@@ -280,6 +282,19 @@ class SurveyFileAutomation(models.Model):
                             'utf-8') if job_obj.description is not None else None
                     except:
                         self.job_description = None
+
+            if self.document.path is not None:
+                try:
+                    file_date, job_no, surveyor_init, surveyor_name, surveyor_email\
+                        = parse_surveyor_from_file_name(self.document.path)
+                    if surveyor_name is None:
+                        file_date, job_no, surveyor_init, surveyor_name, surveyor_email \
+                            = parse_surveyor_from_file_name(self.target_field_folder)
+                    self.surveyor_name = surveyor_name
+                    self.surveyor_email = surveyor_email
+                except Exception as e:
+                    logger_model.exception('Failed to extract surveyor from {}: {}'
+                                           .format(os.path.basename(self.document.path), e))
 
         super(SurveyFileAutomation, self).save(*args, **kwargs)
 

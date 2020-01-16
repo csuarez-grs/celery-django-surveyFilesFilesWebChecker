@@ -173,7 +173,7 @@ class PPPFileAutomationForm(forms.ModelForm):
 
     class Meta:
         model = SurveyFileAutomation
-        fields = ['document', 'site_no',
+        fields = ['document', 'site_no', 'utm_sr_name', 'scale_value',
                   'target_field_folder',
                   'overwriting']
 

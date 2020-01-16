@@ -225,6 +225,11 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
         uploaded_file = self.object.document.file.name
         document_name = os.path.basename(uploaded_file)
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
+        project_manager_name = self.object.project_manager
+        project_manager_email = self.object.project_manager_email
+        surveyor_name = self.object.surveyor_name
+        surveyor_email = self.object.surveyor_email
+
         args = (uploader_usernane, job_no, document_name, uploaded_time_str)
         notify_uploading.si(*args) \
             .set(queue=task_queue) \
@@ -249,11 +254,12 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
             self.object.scale_value,
         ]
 
-        args = (uploaded_file, tracking_id, overwriting, target_field_folder, utm_sr_name, scale_value,
-                uploading_info, job_no, site_no)
+        args = (job_no, site_no, uploaded_file, uploading_info, scale_value, utm_sr_name, project_manager_name,
+                project_manager_email, surveyor_name, surveyor_email,
+                target_field_folder, tracking_id, overwriting)
 
-        ppp_automation_task = ppp_automation.si(*args).set(queue=task_queue)
-        ppp_automation_task.apply_async()
+        ppp_automation_task_func = ppp_automation_task.si(*args).set(queue=task_queue)
+        ppp_automation_task_func.apply_async()
 
         return self.success_message % dict(
             cleaned_data,

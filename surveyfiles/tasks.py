@@ -4,8 +4,9 @@ automation_folder = r'\\grs.com\DFS\GIS\GIS_Main\06_Tools\04_ToolBoxes\PythonToo
 if automation_folder not in sys.path:
     sys.path.append(automation_folder)
 
-from fortis_jxl_automation_from_web import FortisJXLWebAutomationWorker
-from fortis_automation_from_ftp_20191028 import FortisFTPTransferFolderWorker
+import fortis_jxl_automation_from_web as fortis_web_automation
+import ppp_automation
+import grs_base_classes as gbc
 
 # from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
@@ -61,9 +62,10 @@ def quality_check_jxl(uploaded_file, tracking_id, create_gis_data, create_client
                       exporting_types, exporting_profiles, overwriting,
                       notify_surveyor, notify_pm, uploading_info):
     logger_request.info('QC Check {}'.format(uploaded_file))
-    worker = FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, tracking_id=tracking_id, logger_name='QC',
-                                          notify_surveyor=notify_surveyor, notify_pm=notify_pm,
-                                          uploading_info=uploading_info)
+    worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, tracking_id=tracking_id,
+                                                                logger_name='QC',
+                                                                notify_surveyor=notify_surveyor, notify_pm=notify_pm,
+                                                                uploading_info=uploading_info)
 
     worker.qc_check()
 
@@ -74,44 +76,55 @@ def quality_check_jxl(uploaded_file, tracking_id, create_gis_data, create_client
 
 
 @celery_app.task()
-def ppp_automation(uploaded_file, tracking_id, overwriting, target_field_folder, utm_sr_name, scale_value,
-                   uploading_info, job_no, site_no):
-    logger_request.info('QC Check {}'.format(uploaded_file))
-    logger_request.info('Target field folder: {}'.format(target_field_folder))
-    logger_request.info('Uploading Info: {}'.format(uploading_info))
-    logger_request.info('Job Number: {}'.format(job_no))
-    worker = FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, tracking_id=tracking_id,
-                                          logger_name='QC',
-                                          uploading_info=uploading_info)
+def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_value, utm_sr_name, project_manager_name,
+                        project_manager_email, surveyor_name, surveyor_email,
+                        target_field_folder, tracking_id, overwriting):
 
-    worker.qc_check()
+    # type: (str, int, str, list, float, str, str, str, str, str, str, str, bool) -> None
+    grs_job = gbc.GRSJob(job_no=job_no)
 
-    if worker.qc_results == 'Succeeded':
-        ppp_automation_tuple = (uploaded_file, target_field_folder, utm_sr_name, scale_value, site_no)
-        run_automation_jxl(uploaded_file, tracking_id, create_gis_data=True,
-                           create_client_report=True, exporting_types=None,
-                           exporting_profiles=None,
-                           overwriting=overwriting, notify_pm=False, uploading_info=uploading_info,
-                           ppp_automation_tuple=ppp_automation_tuple, job_no=job_no)
+    jxl_file = gbc.JXLFile(jxl_path=uploaded_file, scale_value=scale_value, utm_name=utm_sr_name)
+
+    pm = gbc.ProjectManager(employee_name=project_manager_name,
+                            employee_email=project_manager_email)
+
+    if surveyor_name is not None:
+        surveyor = gbc.Surveyor(employee_name=surveyor_name,
+                                employee_email=surveyor_email)
+    else:
+        surveyor = None
+
+    field_folder = gbc.FieldFolder(
+        folder_path=target_field_folder,
+        job_no=job_no,
+        pm=pm,
+        surveyor=surveyor)
+
+    ppp_automation_worker = ppp_automation.PPPAutomationWorker(grs_job=grs_job, site_no=site_no,
+                                                               ppp_jxl=jxl_file, field_folder=field_folder,
+                                                               uploading_info=uploading_info,
+                                                               uploader=pm,
+                                                               web_track_id=tracking_id,
+                                                               overwriting=overwriting,
+                                                               testing=True
+                                                               )
+
+    ppp_automation_worker.run()
 
 
 def run_automation_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report,
                        exporting_types, exporting_profiles, overwriting,
-                       notify_pm, uploading_info, ppp_automation_tuple=None, job_no=None):
+                       notify_pm, uploading_info):
     logger_request.info('Running automation for {}'.format(uploaded_file))
 
-    if ppp_automation_tuple is None:
-        worker = FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
-                                              tracking_id=tracking_id,
-                                              create_gis_data=create_gis_data,
-                                              create_reports=create_client_report,
-                                              exporting_profiles=exporting_profiles,
-                                              exporting_types=exporting_types,
-                                              overwriting=overwriting,
-                                              notify_pm=notify_pm,
-                                              uploading_info=uploading_info)
+    worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
+                                                                tracking_id=tracking_id,
+                                                                create_gis_data=create_gis_data,
+                                                                create_reports=create_client_report,
+                                                                exporting_profiles=exporting_profiles,
+                                                                exporting_types=exporting_types,
+                                                                overwriting=overwriting,
+                                                                notify_pm=notify_pm,
+                                                                uploading_info=uploading_info)
 
-        worker.automatic_processing()
-    else:
-        # TODO Implement new ppp automation here
-        pass
+    worker.automatic_processing()
