@@ -8,12 +8,14 @@ from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_
 from SurveyFilesWebChecker.settings import logger_request
 from django import forms
 import re
+from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_all_profiles_str, default_exporting_types_options
+    default_all_profiles_str, default_exporting_types_options, fortis_job_no_pattern, validate_target_field_folder
 
 
 class SurveyFileAutomationForm(forms.ModelForm):
@@ -185,8 +187,24 @@ class PPPFileAutomationForm(forms.ModelForm):
         cleaned_data = self.cleaned_data
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         document_name = str(cleaned_data['document'])
+        target_field_folder = self.cleaned_data.get('target_field_folder')
+
         logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
+        logger_request.info('target field folder: {}'.format(target_field_folder),
+                            extra={'username': self.user.username})
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+
+        if re.search('\.jxl$', document_name) and re.search(fortis_job_no_pattern, document_name):
+            jxl_job_no = re.search(fortis_job_no_pattern, document_name).groups()[0]
+            if re.search(fortis_job_no_pattern, os.path.basename(target_field_folder)):
+                field_folder_job = re.search(fortis_job_no_pattern, os.path.basename(target_field_folder)).groups()[0]
+                if jxl_job_no.upper() != field_folder_job.upper():
+                    raise forms.ValidationError(
+                        _('Target field folder: %(target_field_folder)s, has job no %(field_folder_job)s'
+                          ' (Different from %(jxl_job_no)s) in jxl file !!!'),
+                        params={'target_field_folder': os.path.basename(target_field_folder),
+                                'field_folder_job': field_folder_job, 'jxl_job_no': jxl_job_no}
+                    )
 
         logger_request.info('cleaning is done', extra={'username': self.user.username})
 
@@ -198,18 +216,10 @@ class PPPFileAutomationForm(forms.ModelForm):
         new_jxl_obj = super(PPPFileAutomationForm, self).save(commit=False)
         document_path = str(new_jxl_obj.document.file.name)
         logger_request.info('Document path: {}'.format(document_path), extra={'username': self.user.username})
-        document_name = os.path.basename(document_path)
-        if document_name[-4:].lower() == '.jxl' and os.path.isfile(document_path):
-            try:
-                utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)[0:2]
-                new_jxl_obj.utm_sr_name = utm_sr
-                new_jxl_obj.scale_value = scale_value
-            except Exception as e:
-                logger_request.warning('Failed to extract utm and scale from {}:\n{}'.format(document_path, str(e)),
-                                       extra={'username': self.user.username})
 
-        job_no = validate_jxl_pattern(new_jxl_obj.document)
-        new_jxl_obj.job_no = job_no
+        jxl_job_no = validate_jxl_pattern(new_jxl_obj.document)
+
+        new_jxl_obj.job_no = jxl_job_no
         new_jxl_obj.uploader = user.username
         new_jxl_obj.uploader_email = user.email
 

@@ -41,7 +41,6 @@
 }
 
 
-
 .checkbox label {
     color: whitesmoke;
     margin: 2px 2px 2px 10px;
@@ -84,7 +83,7 @@ form > div {
 #div_id_exporting_types_selected {
     background-color: gray;
     color: whitesmoke;
-    padding: 10px 5px ;
+    padding: 10px 5px;
     margin-left: -15px;
 }
 
@@ -151,9 +150,9 @@ form > div {
 }
 
 /*#new-task-section select, textarea, input[type=number] {*/
-    /*width: 100%;*/
-    /*display: block;*/
-    /*clear: both;*/
+/*width: 100%;*/
+/*display: block;*/
+/*clear: both;*/
 /*}*/
 
 #new-task-section form div.row {
@@ -291,13 +290,37 @@ select {
     );
 }
 
-.alert-areas, .help-block strong {
-    color: greenyellow;
-    background-color: dimgrey;
+.alert, .help-block strong {
+    color: antiquewhite;
+    background-color: darkred;
     font-weight: bold;
     font-size: large;
     padding: 0.2em;
     margin: 0.2em 0;
+}
+
+#id_document {
+    width: 100%;
+    font-size: medium;
+}
+
+.notes {
+    font-weight: bold;
+}
+
+.alert-areas {
+    color: antiquewhite;
+    background-color: darkslateblue;
+    font-weight: bold;
+    font-size: large;
+    padding: 0.2em;
+    margin: 0.2em 0;
+}
+
+#id_document {
+    font-weight: bold;
+    background-color: darkgreen;
+    color: whitesmoke;
 }
 
 /* unvisited link */

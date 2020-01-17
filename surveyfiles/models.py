@@ -20,8 +20,10 @@ from multiselectfield import MultiSelectField
 
 from core.models import GRSJobInfo
 
-from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info,\
+from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info, \
     parse_surveyor_from_file_name
+
+fortis_job_no_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
 
 exporting_types_options = [(item, item) for item in default_exporting_types]
 default_exporting_types_options = [c[0] for c in exporting_types_options]
@@ -31,15 +33,19 @@ default_all_profiles_str = 'All Profiles'
 def validate_target_field_folder(target_field_folder):
     if not os.path.isdir(target_field_folder):
         raise ValidationError(
-                _('%(target_field_folder)s is not valid folder !!!'),
-                params={'target_field_folder': target_field_folder}
-            )
+            _('%(target_field_folder)s is not valid folder !!!'),
+            params={'target_field_folder': target_field_folder}
+        )
     elif len(os.listdir(target_field_folder)) == 0:
         raise ValidationError(
-                _('%(target_field_folder)s is empty folder !!!'),
-                params={'target_field_folder': target_field_folder}
-            )
-
+            _('%(target_field_folder)s is empty folder !!!'),
+            params={'target_field_folder': target_field_folder}
+        )
+    elif not re.search(fortis_job_no_pattern, os.path.basename(target_field_folder)):
+        raise ValidationError(
+            _('%(target_field_folder)s has no valid fortis job no !!!'),
+            params={'target_field_folder': os.path.basename(target_field_folder)}
+        )
 
 
 def validate_jxl_content(document):
@@ -71,15 +77,14 @@ def validate_jxl_pattern(document):
         )
 
     # jxl_name_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})\-S(?P<site_no>\d+)[\_\-\.]', re.IGNORECASE)
-    jxl_name_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
-    if not re.search(jxl_name_pattern, document_name):
+    if not re.search(fortis_job_no_pattern, document_name):
         raise ValidationError(
             # _('%(file_name)s: Please include valid job no and site no like "19CF0001-S1" in your file name'),
             _('%(file_name)s: Please include valid job no like "19CF0001" in your file name'),
             params={'file_name': document_name},
         )
     else:
-        group_matched = list(re.finditer(jxl_name_pattern, document_name))[0]
+        group_matched = list(re.finditer(fortis_job_no_pattern, document_name))[0]
         groups_dict = group_matched.groupdict()
         logger_model.info('{}'.format(groups_dict))
 
@@ -285,7 +290,7 @@ class SurveyFileAutomation(models.Model):
 
             if self.document.path is not None:
                 try:
-                    file_date, job_no, surveyor_init, surveyor_name, surveyor_email\
+                    file_date, job_no, surveyor_init, surveyor_name, surveyor_email \
                         = parse_surveyor_from_file_name(self.document.path)
                     if surveyor_name is None:
                         file_date, job_no, surveyor_init, surveyor_name, surveyor_email \
