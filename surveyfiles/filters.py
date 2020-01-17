@@ -32,10 +32,12 @@ class SurveyFileAutomationFilter(django_filters.FilterSet):
 
     uploader = DynamicChoiceFilter('uploader', empty_label='Select Uploader')
     project_manager = DynamicChoiceFilter('project_manager', empty_label='Select PM')
+    automation_status = DynamicChoiceFilter('automation_status', empty_label='Automation Status')
+    qc_passed = DynamicChoiceFilter('qc_passed', empty_label='QC Status')
 
     class Meta:
         model = SurveyFileAutomation
-        fields = ['job_no', 'uploader', 'project_manager']
+        fields = ['job_no', 'uploader', 'project_manager', 'automation_status', 'qc_passed']
 
         filter_overrides = {
             models.CharField: {
