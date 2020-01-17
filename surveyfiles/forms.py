@@ -161,6 +161,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
         job_no = validate_jxl_pattern(new_jxl_obj.document)
         new_jxl_obj.job_no = job_no
         new_jxl_obj.uploader = user.username
+        new_jxl_obj.uploader_name = '{} {}'.format(user.first_name, user.last_name)
         new_jxl_obj.uploader_email = user.email
 
         logger_request.info('Saving in form', extra={'username': self.user.username})

@@ -231,6 +231,7 @@ class SurveyFileAutomation(models.Model):
                                       default=True, blank=False, null=False)
     uploaded_time = models.DateTimeField(verbose_name='Uploaded Time', blank=False, null=False)
     uploader = models.CharField(max_length=30, verbose_name='Uploader', blank=False, null=False)
+    uploader_name = models.CharField(max_length=50, verbose_name='Uploader Name', blank=True, null=True)
     uploader_email = models.EmailField(max_length=50, verbose_name='Uploader Email', blank=False, null=False)
     job_description = models.CharField(db_column='Job Description', max_length=500, blank=True, null=True)
     project_manager = models.CharField(db_column='Project Manager', max_length=50, blank=True, null=True)

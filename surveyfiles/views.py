@@ -257,7 +257,7 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
 
         args = (job_no, site_no, uploaded_file, uploading_info, scale_value, utm_sr_name, project_manager_name,
                 project_manager_email, surveyor_name, surveyor_email,
-                target_field_folder, tracking_id, overwriting)
+                target_field_folder, tracking_id, overwriting, self.object.uploader_name, self.object.uploader_email)
 
         ppp_automation_task_func = ppp_automation_task.si(*args).set(queue=task_queue)
         ppp_automation_task_func.apply_async()
