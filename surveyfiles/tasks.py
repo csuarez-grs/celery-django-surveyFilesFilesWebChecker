@@ -5,7 +5,11 @@ if automation_folder not in sys.path:
     sys.path.append(automation_folder)
 
 import fortis_jxl_automation_from_web as fortis_web_automation
-import ppp_automation
+
+try:
+    import ppp_automation
+except:
+    pass
 import grs_base_classes as gbc
 
 # from django.contrib.auth.models import User
