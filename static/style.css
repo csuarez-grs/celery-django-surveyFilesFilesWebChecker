@@ -299,13 +299,14 @@ textarea {
     display: inline-block;
     /*margin: 0.3em 0;*/
     /*width:30%;*/
-    /*min-width:30%;*/
-    /*max-width:30%;*/
+    min-width:50%;
+    max-width:50%;
     text-decoration: none;
     color: #fff;
     font-weight: bold;
     background-color: #538fbe;
     padding: 1em 1em;
+    margin: 0.3em;
     font-size: 2em;
     border: 1px solid #2d6898;
     background-image: linear-gradient(bottom, rgb(73, 132, 180) 0%, rgb(97, 155, 203) 100%);
@@ -349,7 +350,7 @@ textarea {
 }
 
 .huge-button-div {
-    display: flex;
+    display: block;
     width: 60%;
     /*height: 50%;*/
     margin: 2em auto;

@@ -10,6 +10,7 @@ from django.views.generic import ListView, CreateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from pure_pagination.mixins import PaginationMixin
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 
 from .filters import SurveyFileAutomationFilter
 from .forms import SurveyFileAutomationForm, PPPFileAutomationForm
@@ -30,7 +31,7 @@ class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, L
 
     def get_queryset(self):
         valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
-                         if os.path.isfile(object.document.path) and object.target_field_folder is None]
+                         if os.path.isfile(object.document.path)]
         return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
 
 
@@ -43,7 +44,7 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
 
     def get_queryset(self):
         valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
-                         if os.path.isfile(object.document.path) and object.target_field_folder is None]
+                         if os.path.isfile(object.document.path)]
         return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
 
 
@@ -269,3 +270,9 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
             scale_value=scale_value,
             # uploader=self.object.uploader
         )
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_superuser or request.user.groups.filter(name='ppp-automation-group').exists():
+            return super(CreatePPPFileAutomationView, self).dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden()

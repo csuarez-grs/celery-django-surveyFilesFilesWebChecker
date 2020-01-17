@@ -175,13 +175,12 @@ select {
 .file-card {
     float: left;
     box-sizing: border-box;
-    max-width: 260px;
-    min-width: 260px;
-    max-height: 250px;
-    min-height: 250px;
+    max-width: 300px;
+    min-width: 300px;
+    max-height: 260px;
+    min-height: 260px;
     background-color: gray;
     color: white;
-    padding: 1em;
     margin: 0.5em;
     border: solid 5px deepskyblue;
     word-break: break-all;
@@ -338,3 +337,20 @@ select {
     color: darkorange;
 }
 
+.card-body {
+    padding: 1em;
+    font-size: 14px;
+}
+
+.card-header {
+    font-weight: bold;
+    font-size: 16px;
+    background-color: whitesmoke;
+    color: royalblue;
+    padding: 0.3em;
+}
+
+.page-title {
+    font-weight: bold;
+    color: darkslateblue;
+}

@@ -6,15 +6,15 @@
 
 {% block content %}
     <!--<div id="navigation_links">-->
-        <!--{% if request.user.is_authenticated %}-->
-            <!--{% if request.user.first_name %}-->
-                <!--<p class="hello-word">Hi {{ request.user.first_name }}! You are logged in !</p>-->
+    <!--{% if request.user.is_authenticated %}-->
+        <!--{% if request.user.first_name %}-->
+            <!--<p class="hello-word">Hi {{ request.user.first_name }}! You are logged in !</p>-->
             <!--{% else %}-->
-                <!--<p class="hello-word">Hi {{ request.user.username }}! You are logged in !</p>-->
+            <!--<p class="hello-word">Hi {{ request.user.username }}! You are logged in !</p>-->
             <!--{% endif %}-->
 
-            <!--{% if request.user.is_superuser %}-->
-                <!--<p>Other Users Logged in: {{ current_users }} </p>-->
+        <!--{% if request.user.is_superuser %}-->
+            <!--<p>Other Users Logged in: {{ current_users }} </p>-->
             <!--{% endif %}-->
         <!--{% endif %}-->
     <!--</div>-->
@@ -33,9 +33,11 @@
             <a class="huge-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Automation Cards</a>
         </div>
 
-        <div style="text-align: center">
-            <a class="huge-button" href="{% url 'surveyfiles:ppp_automation_view' %}">PPP Automation</a>
-        </div>
+        {% if request.user.is_ppp_automation_group or request.user.is_superuser %}
+            <div style="text-align: center">
+                <a class="huge-button" href="{% url 'surveyfiles:ppp_automation_view' %}">PPP Automation</a>
+            </div>
+        {% endif %}
 
     </div>
 {% endblock %}

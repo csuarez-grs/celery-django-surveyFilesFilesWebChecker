@@ -310,6 +310,22 @@ class SurveyFileAutomation(models.Model):
         else:
             return None
 
+    def get_survey_file_link(self):
+        if self.document is not None and os.path.isfile(self.document.path):
+            document_unc_path = self.document.path.replace('T:', r'\\grs.com\DFS\GIS')
+            document_link = get_target_url(document_unc_path)
+            return document_link
+        else:
+            return None
+
+    def get_field_folder_link(self):
+        if self.target_field_folder is not None and os.path.isdir(self.target_field_folder):
+            field_folder_link = get_target_url(self.target_field_folder,
+                                               os.path.basename(self.target_field_folder).replace(' ', '_'))
+            return field_folder_link
+        else:
+            return None
+
     def get_site_folder_link(self):
         if self.site_folder is not None and os.path.isdir(self.site_folder):
             folder_link = get_target_url(self.site_folder)

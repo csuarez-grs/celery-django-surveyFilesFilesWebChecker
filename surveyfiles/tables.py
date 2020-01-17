@@ -13,6 +13,8 @@ class StatusUpdateLinkColumn(tables.LinkColumn):
 class SurveyFileAutomationTable(tables.Table):
     # target_url = tables.Column(accessor='get_target_url', verbose_name='Target URL', orderable=False)
     log_link = tables.Column(accessor='get_log_link', verbose_name='Log Link', orderable=False)
+    document_link = tables.Column(accessor='get_survey_file_link', verbose_name='Document', orderable=False)
+    field_folder_link = tables.Column(accessor='get_field_folder_link', verbose_name='Target Field Folder', orderable=False)
     # time_ago = tables.Column(accessor='get_time_ago', verbose_name='Time to Now', orderable=False)
     # transferred_date = tables.Column(accessor='get_transferred_date', verbose_name='Transferred Date',
     #                                  orderable=False)
@@ -30,7 +32,8 @@ class SurveyFileAutomationTable(tables.Table):
             'site_no',
             # 'time_ago',
             'uploader',
-            'document',
+            'document_link',
+            'field_folder_link',
             'log_link',
             'project_manager',
             'qc_time',
