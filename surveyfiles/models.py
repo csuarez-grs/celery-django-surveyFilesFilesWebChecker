@@ -28,6 +28,10 @@ fortis_job_no_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE
 exporting_types_options = [(item, item) for item in default_exporting_types]
 default_exporting_types_options = [c[0] for c in exporting_types_options]
 default_all_profiles_str = 'All Profiles'
+project_coordinates_choices = ((item, item) for item in project_coordinates_list)
+
+min_scale_value = 0.0
+max_scale_value = 1.5
 
 
 def validate_target_field_folder(target_field_folder):
@@ -207,8 +211,9 @@ class SurveyFileAutomation(models.Model):
     extract_input_values = models.BooleanField(verbose_name='Extract UTM name and scale factor value from jxl file',
                                                default=False, blank=False, null=False)
     utm_sr_name = models.CharField(verbose_name='Project System Name', max_length=100, blank=True, null=True,
-                                   choices=((item, item) for item in project_coordinates_list))
-    scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True, min_value=0.0, max_value=1.5)
+                                   choices=project_coordinates_choices)
+    scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True,
+                              min_value=min_scale_value, max_value=max_scale_value)
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
                                           verbose_name='Create GIS datasets',
                                           default=False, blank=False, null=False)

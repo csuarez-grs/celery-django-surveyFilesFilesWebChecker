@@ -15,7 +15,8 @@ from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_all_profiles_str, default_exporting_types_options, fortis_job_no_pattern, validate_target_field_folder
+    default_all_profiles_str, default_exporting_types_options, fortis_job_no_pattern, project_coordinates_choices, \
+    min_scale_value, max_scale_value
 
 
 class SurveyFileAutomationForm(forms.ModelForm):
@@ -33,7 +34,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
                                                          initial=tuple(default_exporting_types_options),
                                                          widget=forms.widgets.CheckboxSelectMultiple,
                                                          required=False)
-    overwriting = forms.BooleanField(initial=True, required=False)
+    overwriting = forms.BooleanField(initial=True, required=True)
 
     class Meta:
         model = SurveyFileAutomation
@@ -48,6 +49,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
+        self.fields['extract_input_values'].required = True
+        self.fields['extract_input_values'].initial = False
 
         # if not is_automation_admin_group(self.user) and not self.user.is_superuser:
         #
@@ -172,7 +175,6 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
 
 class PPPFileAutomationForm(forms.ModelForm):
-    overwriting = forms.BooleanField(initial=True, required=False)
 
     class Meta:
         model = SurveyFileAutomation
@@ -183,6 +185,11 @@ class PPPFileAutomationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(PPPFileAutomationForm, self).__init__(*args, **kwargs)
+        self.fields['utm_sr_name'].required = True
+        self.fields['scale_value'].required = True
+        self.fields['target_field_folder'].required = True
+        self.fields['overwriting'].required = True
+        self.fields['overwriting'].initial = True
 
     def clean(self):
         cleaned_data = self.cleaned_data
