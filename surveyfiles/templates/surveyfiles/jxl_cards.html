@@ -46,7 +46,11 @@
                     <div class="file-card">
                         <p class="card-header">{{ object.job_no }} ({{ object.target_field_folder|automation_type }})</p>
                         <div class="card-body">
-                            <p class="card-title">{{ object.uploader }} at {{ object.uploaded_time|date:'Y-m-d H:i:s' }}</p>
+                            {% if object.uploader_name%}
+                                <p class="card-title">{{ object.uploader_name }} at {{ object.uploaded_time|date:'Y-m-d H:i:s' }}</p>
+                                {% else %}
+                                <p class="card-title">{{ object.uploader }} at {{ object.uploaded_time|date:'Y-m-d H:i:s' }}</p>
+                            {% endif %}
                             <p class="card-title">Log: {{ object.get_log_link }}</p>
                             <p class="card-text">Survey File: {{ object.get_survey_file_link }}</p>
                             <p class="card-text">Field Folder: {{ object.get_field_folder_link }}</p>
