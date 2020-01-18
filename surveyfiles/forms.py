@@ -175,7 +175,6 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
 
 class PPPFileAutomationForm(forms.ModelForm):
-
     class Meta:
         model = SurveyFileAutomation
         fields = ['document', 'site_no', 'utm_sr_name', 'scale_value',
@@ -196,6 +195,9 @@ class PPPFileAutomationForm(forms.ModelForm):
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         document_name = str(cleaned_data['document'])
         target_field_folder = self.cleaned_data.get('target_field_folder')
+        if target_field_folder is not None:
+            target_field_folder = target_field_folder.replace('R:', r'\\grs.com\DFS\JOBS')
+            self.cleaned_data['target_field_folder'] = target_field_folder
 
         logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
         logger_request.info('target field folder: {}'.format(target_field_folder),
