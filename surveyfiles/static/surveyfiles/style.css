@@ -298,6 +298,15 @@ select {
     margin: 0.2em 0;
 }
 
+.help-block {
+    color: whitesmoke;
+    background-color: dimgrey;
+    font-weight: bold;
+    font-size: large;
+    padding: 0.2em;
+    margin: 0.2em 0;
+}
+
 #id_document {
     width: 100%;
     font-size: medium;

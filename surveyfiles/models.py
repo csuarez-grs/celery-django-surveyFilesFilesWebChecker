@@ -260,7 +260,8 @@ class SurveyFileAutomation(models.Model):
     unit_report_path = models.TextField(db_column='Unit Report', blank=True, null=True)
     errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
     target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
-                                           validators=[validate_target_field_folder])
+                                           validators=[validate_target_field_folder],
+                                           help_text=r'Paste a valid field folder path like \\grs.com\DFS\Jobs\2019\_Edmonton\19EF0397\Data & Calcs\1-Field Returns\20191227 AC\19EF0397 AC 20191227 S1 CANNET')
     transmittals_folder = models.CharField(db_column='Transmittals Folder', max_length=255, blank=True, null=True)
     done_with_automation = models.CharField(db_column='Done With Automation', max_length=1
                                             , blank=True, null=True,
