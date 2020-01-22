@@ -50,6 +50,24 @@ def validate_target_field_folder(target_field_folder):
             _('%(target_field_folder)s has no valid fortis job no !!!'),
             params={'target_field_folder': os.path.basename(target_field_folder)}
         )
+    else:
+        sub_dirs = [os.path.join(target_field_folder, item) for item in os.listdir(target_field_folder)
+                    if os.path.isdir(os.path.join(target_field_folder, item))]
+        notes_sub_folders = [item for item in sub_dirs if os.path.basename(item).title() == 'Notes']
+        photo_sub_folders = [item for item in sub_dirs if re.search('Photo|Picture', os.path.basename(item),
+                                                                    re.IGNORECASE)]
+
+        if len(notes_sub_folders) != 1:
+            raise ValidationError(
+                _('%(count)s Notes folder(s) found !!!'),
+                params={'count': len(notes_sub_folders)}
+            )
+
+        if len(photo_sub_folders) != 1:
+            raise ValidationError(
+                _('%(count)s Photos or Pictures folder(s) found !!!'),
+                params={'count': len(photo_sub_folders)}
+            )
 
 
 def validate_jxl_content(document):
@@ -261,7 +279,10 @@ class SurveyFileAutomation(models.Model):
     errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
     target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
                                            validators=[validate_target_field_folder],
-                                           help_text=r'Paste a valid field folder path like \\grs.com\DFS\Jobs\2019\_Edmonton\19EF0397\Data & Calcs\1-Field Returns\20191227 AC\19EF0397 AC 20191227 S1 CANNET')
+                                           help_text=r'Paste a valid field folder path including Data, Notes and'
+                                                     r' Pictures sub-folders like \\grs.com\DFS\Jobs\2019\_Edmonton'
+                                                     r'\19EF0397\Data & Calcs\1-Field Returns\20191227 AC\19EF0397'
+                                                     r' AC 20191227 S1 CANNET')
     transmittals_folder = models.CharField(db_column='Transmittals Folder', max_length=255, blank=True, null=True)
     done_with_automation = models.CharField(db_column='Done With Automation', max_length=1
                                             , blank=True, null=True,
