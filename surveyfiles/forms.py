@@ -177,23 +177,36 @@ class SurveyFileAutomationForm(forms.ModelForm):
 class PPPFileAutomationForm(forms.ModelForm):
     class Meta:
         model = SurveyFileAutomation
-        fields = ['document', 'site_no', 'utm_sr_name', 'scale_value',
+        fields = ['document', 'site_no', 'extract_input_values', 'utm_sr_name', 'scale_value',
                   'target_field_folder',
                   'overwriting']
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(PPPFileAutomationForm, self).__init__(*args, **kwargs)
-        self.fields['utm_sr_name'].required = True
+        self.fields['utm_sr_name'].required = False
         self.fields['scale_value'].required = True
         self.fields['target_field_folder'].required = True
         self.fields['overwriting'].required = True
         self.fields['overwriting'].initial = True
+        self.fields['extract_input_values'].required = False
+        self.fields['extract_input_values'].initial = True
 
     def clean(self):
         cleaned_data = self.cleaned_data
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         document_name = str(cleaned_data['document'])
+
+        extract_input_values = cleaned_data['extract_input_values']
+        utm_sr_name = cleaned_data['utm_sr_name']
+
+        if document_name[-4:].lower() == '.jxl' and not extract_input_values:
+            logger_request.info('Checking if utm is entered.', extra={'username': self.user.username})
+            if utm_sr_name is None:
+                    raise forms.ValidationError(
+                        _('Please check "Extract UTM names check box or manually select UTM from dropdown list !!!')
+                    )
+
         target_field_folder = self.cleaned_data.get('target_field_folder')
         if target_field_folder is not None:
             target_field_folder = target_field_folder.replace('R:', r'\\grs.com\DFS\JOBS')
@@ -226,6 +239,16 @@ class PPPFileAutomationForm(forms.ModelForm):
         new_jxl_obj = super(PPPFileAutomationForm, self).save(commit=False)
         document_path = str(new_jxl_obj.document.file.name)
         logger_request.info('Document path: {}'.format(document_path), extra={'username': self.user.username})
+
+        document_name = os.path.basename(document_path)
+        if document_name[-4:].lower() == '.jxl' and os.path.isfile(document_path):
+            try:
+                utm_sr, scale_value = read_jxl_info(document_path, return_utm_name=True)[0:2]
+                if new_jxl_obj.utm_sr_name is None and utm_sr is not None:
+                    new_jxl_obj.utm_sr_name = utm_sr
+            except Exception as e:
+                logger_request.warning('Failed to extract utm from {}:\n{}'.format(document_path, str(e)),
+                                       extra={'username': self.user.username})
 
         jxl_job_no = validate_jxl_pattern(new_jxl_obj.document)
 
