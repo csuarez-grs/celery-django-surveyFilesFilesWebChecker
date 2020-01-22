@@ -177,8 +177,8 @@ select {
     box-sizing: border-box;
     max-width: 300px;
     min-width: 300px;
-    max-height: 260px;
-    min-height: 260px;
+    max-height: 280px;
+    min-height: 280px;
     background-color: gray;
     color: white;
     margin: 0.5em;
@@ -347,7 +347,7 @@ select {
 }
 
 .card-body {
-    padding: 1em;
+    padding: 0.3em 0.5em;
     font-size: 14px;
 }
 
