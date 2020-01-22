@@ -43,7 +43,7 @@ from SurveyFilesWebChecker.settings import logger_request
 def notify_uploading(username, job_no, uploaded_file, uploaded_time_str):
     try:
         # lookup user by id and send them a message
-        from_email = 'gis@globalraymac.ca'
+        gis_email = 'gis@globalraymac.ca'
         user = User.objects.get(username=username)
         user_email = user.email
         user_name = user.username
@@ -54,7 +54,7 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str):
 
         html_content = msg_content
 
-        msg = EmailMultiAlternatives(msg_subject, msg_content, from_email, [user_email])
+        msg = EmailMultiAlternatives(msg_subject, msg_content, gis_email, [user_email, gis_email])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception as e:
