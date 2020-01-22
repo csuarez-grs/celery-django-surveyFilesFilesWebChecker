@@ -50,24 +50,24 @@ def validate_target_field_folder(target_field_folder):
             _('%(target_field_folder)s has no valid fortis job no !!!'),
             params={'target_field_folder': os.path.basename(target_field_folder)}
         )
-    else:
-        sub_dirs = [os.path.join(target_field_folder, item) for item in os.listdir(target_field_folder)
-                    if os.path.isdir(os.path.join(target_field_folder, item))]
-        notes_sub_folders = [item for item in sub_dirs if os.path.basename(item).title() == 'Notes']
-        photo_sub_folders = [item for item in sub_dirs if re.search('Photo|Picture', os.path.basename(item),
-                                                                    re.IGNORECASE)]
-
-        if len(notes_sub_folders) != 1:
-            raise ValidationError(
-                _('%(count)s Notes folder(s) found !!!'),
-                params={'count': len(notes_sub_folders)}
-            )
-
-        if len(photo_sub_folders) != 1:
-            raise ValidationError(
-                _('%(count)s Photos or Pictures folder(s) found !!!'),
-                params={'count': len(photo_sub_folders)}
-            )
+    # else:
+    #     sub_dirs = [os.path.join(target_field_folder, item) for item in os.listdir(target_field_folder)
+    #                 if os.path.isdir(os.path.join(target_field_folder, item))]
+    #     notes_sub_folders = [item for item in sub_dirs if os.path.basename(item).title() == 'Notes']
+    #     photo_sub_folders = [item for item in sub_dirs if re.search('Photo|Picture', os.path.basename(item),
+    #                                                                 re.IGNORECASE)]
+    #
+    #     if len(notes_sub_folders) != 1:
+    #         raise ValidationError(
+    #             _('%(count)s Notes folder(s) found !!!'),
+    #             params={'count': len(notes_sub_folders)}
+    #         )
+    #
+    #     if len(photo_sub_folders) != 1:
+    #         raise ValidationError(
+    #             _('%(count)s Photos or Pictures folder(s) found !!!'),
+    #             params={'count': len(photo_sub_folders)}
+    #         )
 
 
 def validate_jxl_content(document):
