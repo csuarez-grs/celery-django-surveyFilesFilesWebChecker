@@ -118,7 +118,7 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
                                                                uploader=executor,
                                                                web_track_id=tracking_id,
                                                                overwriting=overwriting,
-                                                               testing=True
+                                                               testing=False
                                                                )
 
     ppp_automation_worker.run()
