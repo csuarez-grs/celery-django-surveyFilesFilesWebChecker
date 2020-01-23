@@ -40,7 +40,7 @@ from SurveyFilesWebChecker.settings import logger_request
 
 
 @celery_app.task()
-def notify_uploading(username, job_no, uploaded_file, uploaded_time_str):
+def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_field_folder):
     try:
         # lookup user by id and send them a message
         gis_email = 'gis@globalraymac.ca'
@@ -49,8 +49,14 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str):
         user_name = user.username
         logger_request.info('Sending uploading confirmation email to {}'.format(user_name, uploaded_file))
         msg_subject = '{}: JXL Files Uploading Web Notice'.format(job_no)
-        msg_content = '<p>Uploader: {}<br>File: {}<br>Time: {}</p><br>' \
-            .format(user_name, uploaded_file, uploaded_time_str)
+        if target_field_folder is not None:
+            msg_subject += ' (PPP Automation)'
+            msg_content = '<p>Uploader: {}<br>File: {}<br>Target Field Folder: {}<br>Time: {}</p><br>' \
+                .format(user_name, uploaded_file, target_field_folder, uploaded_time_str)
+        else:
+            msg_subject += ' (Validation)'
+            msg_content = '<p>Uploader: {}<br>File: {}<br>Time: {}</p><br>' \
+                .format(user_name, uploaded_file, uploaded_time_str)
 
         html_content = msg_content
 

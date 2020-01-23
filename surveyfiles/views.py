@@ -94,7 +94,9 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         document_path = self.object.document.file.name
         document_name = os.path.basename(document_path)
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
-        args = (uploader_usernane, job_no, document_name, uploaded_time_str)
+        target_field_folder = self.object.target_field_folder
+
+        args = (uploader_usernane, job_no, document_name, uploaded_time_str, target_field_folder)
         notify_uploading.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
@@ -230,8 +232,9 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
         project_manager_email = self.object.project_manager_email
         surveyor_name = self.object.surveyor_name
         surveyor_email = self.object.surveyor_email
+        target_field_folder = self.object.target_field_folder
 
-        args = (uploader_usernane, job_no, document_name, uploaded_time_str)
+        args = (uploader_usernane, job_no, document_name, uploaded_time_str, target_field_folder)
         notify_uploading.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
