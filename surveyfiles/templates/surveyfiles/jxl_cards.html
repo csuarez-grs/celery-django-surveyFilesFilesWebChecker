@@ -53,7 +53,9 @@
                             {% endif %}
                             <p class="card-title">Log: {{ object.get_log_link }}</p>
                             <p class="card-text">Survey File: {{ object.document|get_file_name }}</p>
-                            <p class="card-text">Field Folder: {{ object.get_field_folder_link }}</p>
+                            {% if object.target_field_folder %}
+                                <p class="card-text">Field Folder: {{ object.get_field_folder_link }}</p>
+                            {% endif %}
                             <p class="qc-passed-text">QC: {{ object.qc_passed }}</p>
                             <p class="automation-status-text">Automation: {{ object.automation_status }}</p>
                         </div>
