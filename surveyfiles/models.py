@@ -279,8 +279,8 @@ class SurveyFileAutomation(models.Model):
     errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
     target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
                                            validators=[validate_target_field_folder],
-                                           help_text=r'Paste a valid field folder path including Data, Notes and'
-                                                     r' Pictures sub-folders like \\grs.com\DFS\Jobs\2019\_Edmonton'
+                                           help_text=r'Paste a valid field folder path '
+                                                     r'\\grs.com\DFS\Jobs\2019\_Edmonton'
                                                      r'\19EF0397\Data & Calcs\1-Field Returns\20191227 AC\19EF0397'
                                                      r' AC 20191227 S1 CANNET')
     transmittals_folder = models.CharField(db_column='Transmittals Folder', max_length=255, blank=True, null=True)
