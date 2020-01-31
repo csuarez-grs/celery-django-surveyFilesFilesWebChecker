@@ -39,6 +39,7 @@ class SurveyFileAutomationTable(tables.Table):
             'qc_time',
             'qc_passed',
             'jxl_errors',
+            'overwriting',
             'automation_started',
             'automation_ended',
             'automation_status',

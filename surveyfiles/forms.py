@@ -187,8 +187,8 @@ class PPPFileAutomationForm(forms.ModelForm):
         self.fields['utm_sr_name'].required = False
         self.fields['scale_value'].required = True
         self.fields['target_field_folder'].required = True
-        self.fields['overwriting'].required = True
-        self.fields['overwriting'].initial = True
+        self.fields['overwriting'].required = False
+        self.fields['overwriting'].initial = False
         self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = True
 
