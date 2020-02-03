@@ -298,6 +298,46 @@ class SurveyFileAutomation(models.Model):
     def __unicode__(self):
         return '{} - {} - {}'.format(self.uploaded_time, self.uploader, self.document.path)
 
+    @property
+    def total_automation_time(self):
+        if self.automation_started is not None:
+            if self.automation_ended is not None:
+                running_end_time = self.automation_ended
+                pre_text = 'Cost'
+            else:
+                running_end_time = datetime.datetime.now()
+                pre_text = 'Running'
+        else:
+            return 'Not started'
+
+        total_running_seconds = int((running_end_time - self.automation_started).total_seconds())
+        if total_running_seconds < 60:
+            total_running_time = '{} {} seconds'.format(pre_text, total_running_seconds)
+        else:
+            total_running_time = '{} {} minutes'.format(pre_text, total_running_seconds / 60)
+
+        return total_running_time
+
+    @property
+    def total_qc_time(self):
+        if self.uploaded_time is not None and self.log_path is not None:
+            if self.qc_time is not None:
+                running_end_time = self.qc_time
+                pre_text = 'Cost'
+            else:
+                running_end_time = datetime.datetime.now()
+                pre_text = 'Running'
+        else:
+            return 'Not started'
+
+        total_running_seconds = int((running_end_time - self.uploaded_time).total_seconds())
+        if total_running_seconds < 60:
+            total_running_time = '{} {} seconds'.format(pre_text, total_running_seconds)
+        else:
+            total_running_time = '{} {} minutes'.format(pre_text, total_running_seconds / 60)
+
+        return total_running_time
+
     def save(self, *args, **kwargs):
 
         if self._state.adding:

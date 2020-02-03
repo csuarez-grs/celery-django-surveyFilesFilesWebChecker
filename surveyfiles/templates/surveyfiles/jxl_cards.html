@@ -57,8 +57,10 @@
                             {% if object.target_field_folder %}
                                 <p class="card-text">Field Folder: {{ object.get_field_folder_link }}</p>
                             {% endif %}
-                            <p class="qc-passed-text">QC: {{ object.qc_passed }}</p>
-                            <p class="automation-status-text">Automation: {{ object.automation_status }}</p>
+                            <p class="qc-passed-text">QC: {{ object.qc_passed }}
+                                ({{ object.total_qc_time }})</p>
+                            <p class="automation-status-text">Automation: {{ object.automation_status }}
+                                ({{ object.total_automation_time }})</p>
                         </div>
                     </div>
                 {% endif %}
