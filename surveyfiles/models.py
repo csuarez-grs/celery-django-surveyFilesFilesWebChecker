@@ -327,17 +327,19 @@ class SurveyFileAutomation(models.Model):
 
     @property
     def total_qc_time(self):
-        if self.uploaded_time is not None and self.log_path is not None:
-            if self.qc_time is not None:
-                running_end_time = self.qc_time
-                pre_text = 'Cost'
-            else:
+        if self.uploaded_time is not None and self.qc_time is not None:
+            if self.qc_passed is None:
+                running_start_time = self.qc_time
                 running_end_time = datetime.datetime.now()
                 pre_text = 'Running'
+            else:
+                running_start_time = self.uploaded_time
+                running_end_time = self.qc_time
+                pre_text = 'Cost'
         else:
             return 'Not started'
 
-        total_running_seconds = int((running_end_time - self.uploaded_time).total_seconds())
+        total_running_seconds = int((running_end_time - running_start_time).total_seconds())
         if total_running_seconds < 60:
             total_running_time = '{} {} seconds'.format(pre_text, total_running_seconds)
         else:
