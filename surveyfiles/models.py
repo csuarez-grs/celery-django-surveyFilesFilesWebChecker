@@ -279,7 +279,7 @@ class SurveyFileAutomation(models.Model):
     errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
     target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
                                            validators=[validate_target_field_folder],
-                                           help_text=r'Paste a valid field folder path '
+                                           help_text=r'Paste a valid field folder path like '
                                                      r'\\grs.com\DFS\Jobs\2019\_Edmonton'
                                                      r'\19EF0397\Data & Calcs\1-Field Returns\20191227 AC\19EF0397'
                                                      r' AC 20191227 S1 CANNET')
@@ -297,6 +297,13 @@ class SurveyFileAutomation(models.Model):
 
     def __unicode__(self):
         return '{} - {} - {}'.format(self.uploaded_time, self.uploader, self.document.path)
+
+    @property
+    def automation_type(self):
+        if self.target_field_folder is not None:
+            return 'PPP Automation'
+        else:
+            return 'JXL QC & Automation'
 
     @property
     def total_automation_time(self):

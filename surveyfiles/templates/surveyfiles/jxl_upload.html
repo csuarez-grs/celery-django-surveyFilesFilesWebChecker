@@ -18,8 +18,8 @@
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="buttons">
-                            <button type="submit" class="btn btn-success">Upload</button>
-                            <a class="btn btn-warning" href="{% url 'surveyfiles:jxl_list_view' %}">Cancel</a>
+                            <button type="submit" class="btn btn-success small-button">Upload</button>
+                            <a class="btn btn-warning small-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel (Back to Status Page)</a>
                         </div>
                     </form>
                 </div>
