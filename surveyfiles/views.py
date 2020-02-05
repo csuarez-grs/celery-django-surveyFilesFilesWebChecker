@@ -47,6 +47,37 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
                          if os.path.isfile(object.document.path)]
         return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
 
+    def get_form_kwargs(self):
+        kwargs = super(SurveyFilesCardsFilterView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(SurveyFilesCardsFilterView, self).get_context_data(**kwargs)
+
+        extra = {'username': self.request.user.username}
+        try:
+            try:
+                results = celery_app.control.ping()
+                good_worker_count = 0
+                total_worker = len(results)
+                for index, worker_dict in enumerate(results):
+                    values = worker_dict.values()
+                    for response_dict in values:
+                        good_action = response_dict.get('ok')
+                        if str(good_action).lower() == 'pong':
+                            good_worker_count += 1
+                bad_worker_count = total_worker - good_worker_count
+                context['worker_status'] = '{} Good workers. {} Bad workers.'.format(good_worker_count,
+                                                                                     bad_worker_count)
+                logger_request.info('Worker status: {}'.format(context['worker_status']), extra=extra)
+            except Exception as e:
+                logger_request.exception('Failed to get worker status: {}'.format(e), extra=extra)
+        except:
+            pass
+
+        return context
+
 
 class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
     model = SurveyFileAutomation
