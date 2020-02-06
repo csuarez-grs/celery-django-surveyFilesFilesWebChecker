@@ -299,6 +299,21 @@ class SurveyFileAutomation(models.Model):
         return '{} - {} - {}'.format(self.uploaded_time, self.uploader, self.document.path)
 
     @property
+    def latest_log_time(self):
+        if self.log_path is not None and os.path.isfile(self.log_path):
+            line_time_str_pattern = re.compile('^\d{4}-(\d{2}-\d{2}\s\d{2}:\d{2}):\d{2}\s')
+            with open(self.log_path) as reader:
+                lines = reader.readlines()
+                lines_with_time = [line for line in lines if re.match(line_time_str_pattern, line)]
+                if len(lines_with_time) == 0:
+                    return None
+                last_line = lines_with_time[-1]
+                last_time = re.search(line_time_str_pattern, last_line).groups()[0]
+                return datetime.datetime.strptime(last_time, '%m-%d %H:%M').strftime('%H:%M on %b %d')
+        else:
+            return None
+
+    @property
     def automation_type(self):
         if self.target_field_folder is not None:
             return 'PPP Automation'

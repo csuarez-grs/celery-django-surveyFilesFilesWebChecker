@@ -52,7 +52,7 @@
                                 {% else %}
                                 <p class="card-title">{{ object.uploader }} at {{ object.uploaded_time|date:'Y-m-d H:i' }}</p>
                             {% endif %}
-                            <p class="card-title">Log: {{ object.get_log_link }}</p>
+                            <p class="card-title">Log: {{ object.get_log_link }} ({{ object.latest_log_time }})</p>
                             <p class="card-text">Survey File: {{ object.document|get_file_name }}</p>
                             {% if object.target_field_folder %}
                                 <p class="card-text">Field Folder: {{ object.get_field_folder_link }}</p>
