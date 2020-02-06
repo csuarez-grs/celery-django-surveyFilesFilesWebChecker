@@ -67,9 +67,13 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
                         good_action = response_dict.get('ok')
                         if str(good_action).lower() == 'pong':
                             good_worker_count += 1
-                bad_worker_count = total_worker - good_worker_count
-                context['worker_status'] = '{} Good workers. {} Bad workers.'.format(good_worker_count,
-                                                                                     bad_worker_count)
+                if good_worker_count == 0:
+                    worker_status = 'No any worker ({} assigned workers) is working !!!'.format(total_worker)
+                else:
+                    worker_status = '{} of {} worker(s) are working.'.format(good_worker_count, total_worker)
+
+                context['worker_status'] = worker_status
+
                 logger_request.info('Worker status: {}'.format(context['worker_status']), extra=extra)
             except Exception as e:
                 logger_request.exception('Failed to get worker status: {}'.format(e), extra=extra)
