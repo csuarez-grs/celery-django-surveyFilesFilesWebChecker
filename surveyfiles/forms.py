@@ -51,7 +51,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
         self.fields['extract_input_values'].required = True
         self.fields['extract_input_values'].initial = False
-
+        self.fields['overwriting'].required = False
+        self.fields['overwriting'].initial = True
         # if not is_automation_admin_group(self.user) and not self.user.is_superuser:
         #
         #     self.readonly_fields = [
