@@ -21,21 +21,23 @@
     <div class="huge-button-div">
 
         <div style="text-align: center">
-            <a class="huge-button" href="{% url 'surveyfiles:jxl_create_view' %}">Validation</a>
+            <a class="huge-button" href="{% url 'surveyfiles:jxl_create_view' %}">JXL Validation (for Surveyors)</a>
         </div>
 
 
-        <div style="text-align: center">
-            <a class="huge-button" href="{% url 'surveyfiles:jxl_list_view' %}">Automation List</a>
-        </div>
+        {% if request.user.is_superuser %}
+            <div style="text-align: center">
+                <a class="huge-button" href="{% url 'surveyfiles:jxl_list_view' %}">Automation List</a>
+            </div>
+        {% endif %}
 
         <div style="text-align: center">
-            <a class="huge-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Automation Cards</a>
+            <a class="huge-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Automation Cards - Check Status</a>
         </div>
 
         {#        {% if request.user|is_ppp_automation_group or request.user.is_superuser %}#}
         <div style="text-align: center">
-            <a class="huge-button" href="{% url 'surveyfiles:ppp_automation_view' %}">Create Transmittals</a>
+            <a class="huge-button" href="{% url 'surveyfiles:ppp_automation_view' %}">Create Transmittals (for PM)</a>
         </div>
         {#        {% endif %}#}
 

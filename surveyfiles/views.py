@@ -56,7 +56,7 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
         context = super(SurveyFilesCardsFilterView, self).get_context_data(**kwargs)
 
         extra = {'username': self.request.user.username}
-        try:
+        if self.request.user is not None:
             try:
                 results = celery_app.control.ping()
                 good_worker_count = 0
@@ -77,8 +77,6 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
                 logger_request.info('Worker status: {}'.format(context['worker_status']), extra=extra)
             except Exception as e:
                 logger_request.exception('Failed to get worker status: {}'.format(e), extra=extra)
-        except:
-            pass
 
         return context
 
