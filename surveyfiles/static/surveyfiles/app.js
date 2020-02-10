@@ -7,19 +7,15 @@ $(function () {
 
 function setColorClass(qc_passed, automation_status) {
 
-    if ((automation_status.indexOf('None') >= 0) || (automation_status.indexOf('—') >= 0)) {
-        if ((qc_passed.indexOf('None') >= 0) || (qc_passed.indexOf('—') >= 0)) {
-            return 'new';
+    if ((automation_status.indexOf('Not started') >= 0)) {
+        if (qc_passed.indexOf('Succeeded') >= 0) {
+            return 'succeeded';
+        } else if (qc_passed.indexOf('Failed') >= 0) {
+            return 'failed';
+        } else if (qc_passed.indexOf('Running') >= 0) {
+            return 'blinking';
         } else {
-            if (qc_passed.indexOf('Succeeded') >= 0) {
-                return 'succeeded';
-            } else if (qc_passed.indexOf('Failed') >= 0) {
-                return 'failed';
-            } else if (qc_passed.indexOf('Running') >= 0) {
-                return 'blinking';
-            } else {
-                return null
-            }
+            return 'new'
         }
     } else {
         if (automation_status.indexOf('Running') >= 0) {
