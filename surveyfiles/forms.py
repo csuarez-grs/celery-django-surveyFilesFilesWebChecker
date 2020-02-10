@@ -49,7 +49,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
-        self.fields['extract_input_values'].required = True
+        self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = False
         self.fields['overwriting'].required = False
         self.fields['overwriting'].initial = True
