@@ -180,6 +180,16 @@ div {
     margin: 5px;
 }
 
+.navbar-web-title {
+    text-align: center;
+    background-color: purple;
+    color: whitesmoke;
+    font-size: xx-large;
+    font-weight: bolder;
+    margin: 2px;
+    padding: 2px;
+}
+
 .table-title-1 {
     text-align: center;
     color: firebrick;

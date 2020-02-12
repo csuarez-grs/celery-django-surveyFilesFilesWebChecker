@@ -157,6 +157,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'surveyfiles.context_processors.add_variable_to_context'
             ],
 
             'libraries': {
@@ -371,3 +372,7 @@ import logging
 logger_request = logging.getLogger('request')
 logger_model = logging.getLogger('model')
 logger_ldap = logging.getLogger('django_python3_ldap')
+
+from decouple import config
+
+web_title = config('WEBTITLE')

@@ -9,9 +9,9 @@
                 <!--{% else %}-->
                 <!--<a class="navbar-brand" href="{% url 'home' %}">Hi, {{ request.user }} ! Welcome to JXL Uploading Web !</a>-->
                 <!--{% endif %}-->
-            <a class="navbar-brand" href="{% url 'home' %}">{{ request.user.first_name }} - JXL Uploading Web</a>
+            <a class="navbar-brand navbar-web-title" href="{% url 'home' %}">{{ request.user.first_name }} - {{ web_title }}</a>
         {% else %}
-            <a class="navbar-brand" href="{% url 'home' %}">JXL Uploading Web</a>
+            <a class="navbar-brand navbar-web-title" href="{% url 'home' %}">{{ web_title }}</a>
         {% endif %}
     </div>
 
