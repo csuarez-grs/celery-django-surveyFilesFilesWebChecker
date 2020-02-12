@@ -64,13 +64,13 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # The URL of the LDAP server.
-LDAP_AUTH_URL = "ldaps://192.168.75.21:636"
+LDAP_AUTH_URL = config("LDAP_AUTH_URL")
 
 # Initiate TLS on connection.
 LDAP_AUTH_USE_TLS = False
 
 # The LDAP search base for looking up users.
-LDAP_AUTH_SEARCH_BASE = "OU=Global Raymac Users,DC=GRS,DC=COM"
+LDAP_AUTH_SEARCH_BASE = config("LDAP_AUTH_SEARCH_BASE")
 
 # The LDAP class that represents a user.
 LDAP_AUTH_OBJECT_CLASS = "user"
@@ -115,13 +115,13 @@ LDAP_AUTH_FORMAT_SEARCH_FILTERS = "ldap_filters.custom_format_search_filters"
 LDAP_AUTH_FORMAT_USERNAME = "django_python3_ldap.utils.format_username_active_directory"
 
 # Sets the login domain for Active Directory users.
-LDAP_AUTH_ACTIVE_DIRECTORY_DOMAIN = 'GRS'
+LDAP_AUTH_ACTIVE_DIRECTORY_DOMAIN = config('LDAP_DOMAIN')
 
 # The LDAP username and password of a user for querying the LDAP database for user
 # details. If None, then the authenticated user will be used for querying, and
 # the `ldap_sync_users` command will perform an anonymous query.
-LDAP_AUTH_CONNECTION_USERNAME = 'gis'
-LDAP_AUTH_CONNECTION_PASSWORD = 'Geo4lyfe'
+LDAP_AUTH_CONNECTION_USERNAME = config('LDAP_USER')
+LDAP_AUTH_CONNECTION_PASSWORD = config('LDAP_PASSWORD')
 
 # Set connection/receive timeouts (in seconds) on the underlying `ldap3` library.
 LDAP_AUTH_CONNECT_TIMEOUT = None
