@@ -322,7 +322,7 @@ class SurveyFileAutomation(models.Model):
         if self.target_field_folder is not None:
             return 'PPP Automation'
         else:
-            return 'JXL QC & Automation'
+            return 'QC & Automation'
 
     @property
     def total_automation_time(self):
