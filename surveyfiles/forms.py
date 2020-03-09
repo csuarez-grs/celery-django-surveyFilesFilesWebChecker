@@ -200,12 +200,20 @@ class PPPFileAutomationForm(forms.ModelForm):
 
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
+        scale_value = cleaned_data['scale_value']
 
         if document_name[-4:].lower() == '.jxl' and not extract_input_values:
-            logger_request.info('Checking if utm is entered.', extra={'username': self.user.username})
+            logger_request.info('Checking if utm and scale value are entered.', extra={'username': self.user.username})
             if utm_sr_name is None:
                     raise forms.ValidationError(
                         _('Please check "Extract UTM names check box or manually select UTM from dropdown list !!!')
+                    )
+
+        if document_name[-4:].lower() == '.csv':
+            logger_request.info('Checking if utm and scale value are entered.', extra={'username': self.user.username})
+            if utm_sr_name is None or scale_value is None:
+                    raise forms.ValidationError(
+                        _('Please manually select UTM from dropdown list and type scale value !!!')
                     )
 
         target_field_folder = self.cleaned_data.get('target_field_folder')
