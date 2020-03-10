@@ -16,9 +16,9 @@ import time
 
 from decouple import config
 
-fortis_tools_path = r'\\grs.com\dfs\GIS\GIS_Main\06_Tools\04_ToolBoxes\PythonToolBox\FortisProjectAutomation'
-if fortis_tools_path not in sys.path:
-    sys.path.append(fortis_tools_path)
+automation_folder = config('automation_folder')
+if automation_folder not in sys.path:
+    sys.path.append(automation_folder)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

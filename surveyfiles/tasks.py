@@ -1,6 +1,6 @@
 import sys
+from SurveyFilesWebChecker.settings import automation_folder
 
-automation_folder = r'\\grs.com\DFS\GIS\GIS_Main\06_Tools\04_ToolBoxes\PythonToolBox\FortisProjectAutomation'
 if automation_folder not in sys.path:
     sys.path.append(automation_folder)
 
