@@ -76,7 +76,7 @@ def quality_check_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_g
                                                                 logger_name='QC',
                                                                 notify_surveyor=notify_surveyor, notify_pm=notify_pm,
                                                                 uploading_info=uploading_info,
-                                                                raise_invalid_errors=raise_invalid_errors)
+                                                                raise_invalid_connection_error=raise_invalid_errors)
 
     worker.qc_check()
 
@@ -139,6 +139,6 @@ def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_
                                                                 overwriting=overwriting,
                                                                 notify_pm=notify_pm,
                                                                 uploading_info=uploading_info,
-                                                                raise_invalid_errors=raise_invalid_errors)
+                                                                raise_invalid_connection_error=raise_invalid_errors)
 
     worker.automatic_processing()
