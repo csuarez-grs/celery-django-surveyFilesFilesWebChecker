@@ -142,6 +142,11 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
 
         # if self.object.create_data_report == 1 and os.path.basename(document_path)[-4:].lower() == '.jxl':
 
+        if self.object.raise_invalid_errors == 1:
+            raise_invalid_errors = True
+        else:
+            raise_invalid_errors = False
+
         if self.object.create_gis_data == 1:
             create_gis_data = True
         else:
@@ -186,7 +191,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             self.object.scale_value
         ]
 
-        args = (document_path, tracking_id, create_gis_data, create_client_report,
+        args = (document_path, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
                 exporting_types, exporting_profiles,
                 overwriting, notify_surveyor, notify_pm, uploading_info)
 

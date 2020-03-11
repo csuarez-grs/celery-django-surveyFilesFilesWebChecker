@@ -232,6 +232,10 @@ class SurveyFileAutomation(models.Model):
                                    choices=project_coordinates_choices)
     scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True,
                               min_value=min_scale_value, max_value=max_scale_value)
+    raise_invalid_errors = models.BooleanField(db_column='Raise Invalid Errors',
+                                               verbose_name='Raise Invalid Profile Connection Errors',
+                                               default=True, blank=False, null=False,
+                                               help_text='Raise Invalid Profile Connection Errors')
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
                                           verbose_name='Create GIS datasets',
                                           default=False, blank=False, null=False)

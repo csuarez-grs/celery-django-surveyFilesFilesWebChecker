@@ -26,6 +26,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
     #                               required=False)
     notify_surveyor = forms.BooleanField(initial=False, required=False)
     notify_pm = forms.BooleanField(initial=False, required=False)
+    raise_invalid_errors = forms.BooleanField(initial=True, required=False,
+                                              label='Raise Invalid Profile Connection Errors')
     create_gis_data = forms.BooleanField(initial=False, required=False)
     create_client_report = forms.BooleanField(initial=False, required=False)
     exporting_profile_no = forms.CharField(initial=default_all_profiles_str, required=False,
@@ -34,13 +36,13 @@ class SurveyFileAutomationForm(forms.ModelForm):
                                                          initial=tuple(default_exporting_types_options),
                                                          widget=forms.widgets.CheckboxSelectMultiple,
                                                          required=False)
-    overwriting = forms.BooleanField(initial=True, required=True)
+    # overwriting = forms.BooleanField(initial=True, required=True)
 
     class Meta:
         model = SurveyFileAutomation
         fields = ['document', 'site_no', 'extract_input_values',
                   'utm_sr_name', 'scale_value',
-                  'notify_surveyor', 'notify_pm',
+                  'notify_surveyor', 'notify_pm', 'raise_invalid_errors',
                   'create_gis_data', 'create_client_report',
                   'exporting_profile_no',
                   'exporting_types_selected',

@@ -68,19 +68,20 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
 
 @celery_app.task()
-def quality_check_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report,
+def quality_check_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
                       exporting_types, exporting_profiles, overwriting,
                       notify_surveyor, notify_pm, uploading_info):
     logger_request.info('QC Check {}'.format(uploaded_file))
     worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, tracking_id=tracking_id,
                                                                 logger_name='QC',
                                                                 notify_surveyor=notify_surveyor, notify_pm=notify_pm,
-                                                                uploading_info=uploading_info)
+                                                                uploading_info=uploading_info,
+                                                                raise_invalid_errors=raise_invalid_errors)
 
     worker.qc_check()
 
     if worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
-        run_automation_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report, exporting_types,
+        run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data, create_client_report, exporting_types,
                            exporting_profiles,
                            overwriting, notify_pm, uploading_info=uploading_info)
 
@@ -124,7 +125,7 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
     ppp_automation_worker.run()
 
 
-def run_automation_jxl(uploaded_file, tracking_id, create_gis_data, create_client_report,
+def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
                        exporting_types, exporting_profiles, overwriting,
                        notify_pm, uploading_info):
     logger_request.info('Running automation for {}'.format(uploaded_file))
@@ -137,6 +138,7 @@ def run_automation_jxl(uploaded_file, tracking_id, create_gis_data, create_clien
                                                                 exporting_types=exporting_types,
                                                                 overwriting=overwriting,
                                                                 notify_pm=notify_pm,
-                                                                uploading_info=uploading_info)
+                                                                uploading_info=uploading_info,
+                                                                raise_invalid_errors=raise_invalid_errors)
 
     worker.automatic_processing()
