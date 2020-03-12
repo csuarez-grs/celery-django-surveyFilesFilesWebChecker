@@ -7,29 +7,36 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-8">
-                <h1 class="mt-2 page-title">Survey Files Checker</h1>
+                <div style="display: flex; align-items: center; margin: 10px 0">
+                    <h1 class="mt-2 page-title" style="margin: 0">Survey Files Checker</h1>
+                    <span style="margin-left: 10px">
+                        <a class="btn btn-warning small-button" style="margin: 0"
+                             href="{% url 'surveyfiles:jxl_cards_view' %}">Check Status</a>
+                    </span>
+                </div>
                 <p class="mt-2 notes">Please use standard name convention for JXL or CSV File: "20190603-19CF0231-SA".
-                For CSV Files, please give UTM system name and scale value.
+                    For CSV Files, please give UTM system name and scale value.
                     For JXL files, select "Extract UTM name and scale factor value from jxl file".</p>
                 <hr class="mt-0 mb-4">
                 <div>
+                    {% if messages %}
+                        <div class="alert-areas">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="buttons">
                             <button type="submit" class="btn btn-success small-button">Upload</button>
-                            <a class="btn btn-warning small-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel (Back to Status Page)</a>
+                            <a class="btn btn-warning small-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel
+                                (Back to Status Page)</a>
                         </div>
                     </form>
                 </div>
-                {% if messages %}
-                    <div class="alert-areas">
-                        {% for message in messages %}
-                            {{ message }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
 
 
                 <!--<iframe name="hiddenFrame" class="hide"></iframe>-->

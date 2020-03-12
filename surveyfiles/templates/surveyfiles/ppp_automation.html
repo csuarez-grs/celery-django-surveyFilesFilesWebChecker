@@ -1,77 +1,83 @@
-{% extends 'surveyfiles/base.html'%}
+{% extends 'surveyfiles/base.html' %}
 {% load crispy_forms_tags %}
 
 {% block title %}PPP Automation{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-8">
-            <h1 class="mt-2 page-title">PPP Automation</h1>
-            <hr class="mt-0 mb-4">
-            <div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <div style="display: flex; align-items: center; margin: 10px 0">
+                    <h1 class="mt-2 page-title" style="margin: 0">PPP Automation</h1>
+                    <span style="margin-left: 10px">
+                        <a class="btn btn-warning small-button" style="margin: 0"
+                             href="{% url 'surveyfiles:jxl_cards_view' %}">Check Status</a>
+                    </span>
+                </div>
+                <hr class="mt-0 mb-4">
+                <div>
+                    {% if messages %}
+                        <div class="alert-areas">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <div class="buttons">
-                        <button type="submit" class="btn btn-success small-button">Upload</button>
-                        <a class="btn btn-warning small-button"
-                           href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel (Back to Status Page)</a>
-                    </div>
-                </form>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="buttons">
+                            <button type="submit" class="btn btn-success small-button">Upload</button>
+                            <a class="btn btn-warning small-button"
+                               href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel (Back to Status Page)</a>
+                        </div>
+                    </form>
+                </div>
+
+
+                <!--<iframe name="hiddenFrame" class="hide"></iframe>-->
+                <!--<div class="table-title-2">JXL File Uploading</div>-->
+                <!--<div class="row">-->
+                <!--<div class="col" id="new-task-section">-->
+                <!--<form method="post" enctype="multipart/form-data">-->
+                <!--{% csrf_token %}-->
+                <!--{% for field in form %}-->
+                    <!--<div class="row">-->
+                    <!--<div class="col-md-3">-->
+                    <!--<div><label class="field-label">{{ field.label_tag }}</label></div>-->
+                    <!--<div class="field-errors">{{ field.errors }}</div>-->
+                    <!--</div>-->
+                    <!--<div class="col-md-9 field-text">-->
+                    <!--{% if field.help_text %}-->
+                        <!--{# <sup>{{ field.help_text }}</sup>#}-->
+                        <!--{{ field.help_text }}-->
+                        <!--{% endif %}-->
+                    <!--{{ field }}-->
+                    <!--</div>-->
+                    <!--</div>-->
+                    <!--{% endfor %}-->
+
+                <!--<div class="row">-->
+                <!--<div class="col-md-12" style="margin: 5px; text-align: left">-->
+                <!--<div class="buttons-area">-->
+                <!--<button type="submit" class="form-button form-button-submit">Upload</button>-->
+                <!--<a class="form-button form-button-cancel" href="{% url 'surveyfiles:jxl_list_view' %}">Cancel</a>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--</form>-->
+
+                <!--<div class="alert-areas">-->
+                <!--{% if messages %}-->
+                    <!--{% for message in messages %}-->
+                        <!--{{ message }}-->
+                        <!--{% endfor %}-->
+                    <!--{% endif %}-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--</div>-->
             </div>
-            {% if messages %}
-            <div class="alert-areas">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
-            {% endif %}
-
-
-            <!--<iframe name="hiddenFrame" class="hide"></iframe>-->
-            <!--<div class="table-title-2">JXL File Uploading</div>-->
-            <!--<div class="row">-->
-            <!--<div class="col" id="new-task-section">-->
-            <!--<form method="post" enctype="multipart/form-data">-->
-            <!--{% csrf_token %}-->
-            <!--{% for field in form %}-->
-            <!--<div class="row">-->
-            <!--<div class="col-md-3">-->
-            <!--<div><label class="field-label">{{ field.label_tag }}</label></div>-->
-            <!--<div class="field-errors">{{ field.errors }}</div>-->
-            <!--</div>-->
-            <!--<div class="col-md-9 field-text">-->
-            <!--{% if field.help_text %}-->
-            <!--{# <sup>{{ field.help_text }}</sup>#}-->
-            <!--{{ field.help_text }}-->
-            <!--{% endif %}-->
-            <!--{{ field }}-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--{% endfor %}-->
-
-            <!--<div class="row">-->
-            <!--<div class="col-md-12" style="margin: 5px; text-align: left">-->
-            <!--<div class="buttons-area">-->
-            <!--<button type="submit" class="form-button form-button-submit">Upload</button>-->
-            <!--<a class="form-button form-button-cancel" href="{% url 'surveyfiles:jxl_list_view' %}">Cancel</a>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</form>-->
-
-            <!--<div class="alert-areas">-->
-            <!--{% if messages %}-->
-            <!--{% for message in messages %}-->
-            <!--{{ message }}-->
-            <!--{% endfor %}-->
-            <!--{% endif %}-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
         </div>
     </div>
-</div>
 {% endblock %}

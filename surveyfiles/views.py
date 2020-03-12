@@ -87,7 +87,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
     template_name = 'surveyfiles/jxl_upload.html'
     success_url = reverse_lazy('surveyfiles:jxl_create_view')
     # success_url = '/success/'
-    success_message = "%(file_name)s - %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
+    success_message = "%(file_name)s - Site %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
                       " Please wait for QC emails"
 
     def get_form_kwargs(self):
@@ -226,7 +226,7 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
     template_name = 'surveyfiles/ppp_automation.html'
     success_url = reverse_lazy('surveyfiles:ppp_automation_view')
     # success_url = '/success/'
-    success_message = "%(file_name)s - %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
+    success_message = "%(file_name)s - Site %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
                       " Please wait for QC emails"
 
     def get_form_kwargs(self):
