@@ -22,7 +22,7 @@ from SurveyFilesWebChecker import celery_app
 # User = get_user_model()
 
 from users.models import LDAPUser as User
-from SurveyFilesWebChecker.settings import logger_request
+from SurveyFilesWebChecker.settings import logger_request, make_field_sketch
 
 
 # @background(schedule=0)
@@ -139,6 +139,7 @@ def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_
                                                                 overwriting=overwriting,
                                                                 notify_pm=notify_pm,
                                                                 uploading_info=uploading_info,
-                                                                raise_invalid_connection_error=raise_invalid_errors)
+                                                                raise_invalid_connection_error=raise_invalid_errors,
+                                                                make_field_sketch=make_field_sketch)
 
     worker.automatic_processing()

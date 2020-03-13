@@ -376,3 +376,4 @@ logger_ldap = logging.getLogger('django_python3_ldap')
 from decouple import config
 
 web_title = config('WEBTITLE')
+make_field_sketch = config('make_field_sketch', cast=bool)
