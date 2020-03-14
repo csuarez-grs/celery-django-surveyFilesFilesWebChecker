@@ -236,6 +236,7 @@ class SurveyFileAutomation(models.Model):
                                                verbose_name='Raise Invalid Profile Connection Errors',
                                                default=True, blank=False, null=False,
                                                help_text='Raise Invalid Profile Connection Errors')
+    site_data_db = models.CharField(db_column='Site Data DB', max_length=500, blank=True, null=True)
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
                                           verbose_name='Create GIS datasets',
                                           default=False, blank=False, null=False)
