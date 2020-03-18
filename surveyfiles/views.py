@@ -152,6 +152,136 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         else:
             create_gis_data = False
 
+        if self.object.overwriting == 1:
+            overwriting = True
+        else:
+            overwriting = False
+
+        exporting_types = [item.strip() for item in self.object.exporting_types_selected
+                           if len(item.strip()) > 0]
+
+        if len(exporting_types) > 0:
+            create_client_report = True
+        else:
+            create_client_report = False
+
+        uploading_info = [
+            self.object.job_no,
+            self.object.site_no,
+            self.object.uploader,
+            self.object.uploader_email,
+            self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S'),
+            self.object.project_manager,
+            self.object.project_manager_email,
+            self.object.utm_sr_name,
+            self.object.scale_value
+        ]
+
+        args = (document_path, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
+                exporting_types,
+                overwriting, uploading_info)
+
+        quality_check_jxl_task = quality_check_jxl.si(*args).set(queue=task_queue)
+        quality_check_jxl_task.apply_async()
+
+        return self.success_message % dict(
+            cleaned_data,
+            file_name=os.path.basename(self.object.document.file.name),
+            site_no=site_no,
+            utm_sr_name=utm_sr_name,
+            scale_value=scale_value,
+            # uploader=self.object.uploader
+        )
+
+    # def get_context_data(self, **kwargs):
+    #     context = super(CreateJXLFileAutomationView, self).get_context_data(**kwargs)
+    #     try:
+    #         context['uploaded_file'] = self.request.FILES[u'document']
+    #     except:
+    #         pass
+    #
+    #     return context
+
+    # def get_success_url(self, *args, **kwargs):
+    #     return reverse('jxlfiles:jxl_list_view')
+
+
+class DataExportView(SuccessMessageMixin, CreateView):
+    model = SurveyFileAutomation
+    form_class = SurveyFileAutomationForm
+    template_name = 'surveyfiles/jxl_upload.html'
+    success_url = reverse_lazy('surveyfiles:jxl_create_view')
+    # success_url = '/success/'
+    success_message = "%(file_name)s - Site %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
+                      " Please wait for QC emails"
+
+    def get_form_kwargs(self):
+        kwargs = super(DataExportView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_invalid(self, form):
+        logger_request.info('form is not valid: {}'.format(self.get_context_data(form=form)),
+                            extra={'username': self.request.user.username})
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def form_valid(self, form):
+        logger_request.info('validating form', extra={'username': self.request.user.username})
+        logger_request.info('user: {}'.format(self.request.user.username),
+                            extra={'username': self.request.user.username})
+        logger_request.info('call saving in form', extra={'username': self.request.user.username})
+        form.save()
+        logger_request.info('saved in form successfully', extra={'username': self.request.user.username})
+        logger_request.info('Document: {}'.format(self.request.FILES[u'document']),
+                            extra={'username': self.request.user.username})
+        return super(DataExportView, self).form_valid(form)
+
+        # return self.render_to_response(self.get_context_data(
+        #     form=form,
+        #     uploaded_file=self.request.FILES[u'document']))
+
+    def get_success_message(self, cleaned_data):
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.request.user.username})
+        logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
+                            extra={'username': self.request.user.username})
+        uploader_usernane = self.request.user.username
+        job_no = self.object.job_no
+        site_no = self.object.site_no
+        utm_sr_name = self.object.utm_sr_name
+        scale_value = self.object.scale_value
+        document_path = self.object.document.file.name
+        document_name = os.path.basename(document_path)
+        uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
+        target_field_folder = self.object.target_field_folder
+
+        args = (uploader_usernane, job_no, document_name, uploaded_time_str, target_field_folder)
+        notify_uploading.si(*args) \
+            .set(queue=task_queue) \
+            .apply_async()
+        # uploader = self.object.uploader
+        # uploader_email = self.object.uploader_email
+        # uploaded_time = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
+        # project_manager = self.object.project_manager
+        # project_manager_email = self.object.project_manager_email
+        tracking_id = self.object.tracking_id
+
+        # if self.object.create_data_report == 1 and os.path.basename(document_path)[-4:].lower() == '.jxl':
+
+        if self.object.raise_invalid_errors == 1:
+            raise_invalid_errors = True
+        else:
+            raise_invalid_errors = False
+
+        if self.object.site_data_db is None:
+            site_data_db = None
+            if self.object.create_gis_data == 1:
+                create_gis_data = True
+            else:
+                create_gis_data = False
+        else:
+            create_gis_data = False
+            site_data_db = self.object.site_data_db
+
         if self.object.create_client_report == 1:
             create_client_report = True
         else:
@@ -172,10 +302,6 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         else:
             notify_pm = False
 
-        exporting_profiles = [int(item.strip()) for item in self.object.exporting_profile_no.split(',')
-                              if len(item.strip()) > 0] \
-            if self.object.exporting_profile_no != 'All Profiles' else self.object.exporting_profile_no
-
         exporting_types = [item.strip() for item in self.object.exporting_types_selected
                            if len(item.strip()) > 0]
 
@@ -191,8 +317,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             self.object.scale_value
         ]
 
-        args = (document_path, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
-                exporting_types, exporting_profiles,
+        args = (document_path, tracking_id, raise_invalid_errors, site_data_db, create_gis_data, create_client_report,
+                exporting_types,
                 overwriting, notify_surveyor, notify_pm, uploading_info)
 
         quality_check_jxl_task = quality_check_jxl.si(*args).set(queue=task_queue)

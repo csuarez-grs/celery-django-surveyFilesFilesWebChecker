@@ -34,6 +34,24 @@ min_scale_value = 0.0
 max_scale_value = 1.5
 
 
+def validate_site_data_db(site_data_db):
+    if not os.path.isdir(site_data_db):
+        raise ValidationError(
+            _('%(site_data_db)s is not valid folder !!!'),
+            params={'site_data_db': site_data_db}
+        )
+    elif len(os.listdir(site_data_db)) == 0:
+        raise ValidationError(
+            _('%(site_data_db)s is empty folder !!!'),
+            params={'site_data_db': site_data_db}
+        )
+    elif not re.search(fortis_job_no_pattern, os.path.basename(site_data_db)):
+        raise ValidationError(
+            _('%(site_data_db)s has no valid fortis job no !!!'),
+            params={'site_data_db': os.path.basename(site_data_db)}
+        )
+
+
 def validate_target_field_folder(target_field_folder):
     if not os.path.isdir(target_field_folder):
         raise ValidationError(
@@ -236,7 +254,12 @@ class SurveyFileAutomation(models.Model):
                                                verbose_name='Raise Invalid Profile Connection Errors',
                                                default=True, blank=False, null=False,
                                                help_text='Raise Invalid Profile Connection Errors')
-    site_data_db = models.CharField(db_column='Site Data DB', max_length=500, blank=True, null=True)
+    site_data_db = models.CharField(db_column='Site Data DB', max_length=500, blank=True, null=True,
+                                    validators=[validate_site_data_db],
+                                    help_text=r'Paste one valid site db to skip "create gis data"'
+                                                         ' if you already have GIS data created'
+                                              r' (\\grs.com\DFS\GIS\GIS_Working\JXL_Web_Job_Root\Dev\jxue'
+                                              r'\20MF0041\CADD\Mapping\01_Data\Site_1\20MF0041_Site_1.gdb)')
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
                                           verbose_name='Create GIS datasets',
                                           default=False, blank=False, null=False)

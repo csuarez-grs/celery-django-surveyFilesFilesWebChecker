@@ -22,7 +22,7 @@ from SurveyFilesWebChecker import celery_app
 # User = get_user_model()
 
 from users.models import LDAPUser as User
-from SurveyFilesWebChecker.settings import logger_request, make_field_sketch
+from SurveyFilesWebChecker.settings import logger_request
 
 
 # @background(schedule=0)
@@ -68,22 +68,22 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
 
 @celery_app.task()
-def quality_check_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
-                      exporting_types, exporting_profiles, overwriting,
-                      notify_surveyor, notify_pm, uploading_info):
+def quality_check_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data,
+                      create_client_report,
+                      exporting_types, overwriting, uploading_info):
     logger_request.info('QC Check {}'.format(uploaded_file))
-    worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, tracking_id=tracking_id,
-                                                                logger_name='QC',
-                                                                notify_surveyor=notify_surveyor, notify_pm=notify_pm,
-                                                                uploading_info=uploading_info,
-                                                                raise_invalid_connection_error=raise_invalid_errors)
+    qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
+                                                                   tracking_id=tracking_id,
+                                                                   logger_name='QC',
+                                                                   uploading_info=uploading_info,
+                                                                   raise_invalid_connection_error=raise_invalid_errors)
 
-    worker.qc_check()
+    qc_worker.qc_check()
 
-    if worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
-        run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data, create_client_report, exporting_types,
-                           exporting_profiles,
-                           overwriting, notify_pm, uploading_info=uploading_info)
+    if qc_worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
+        run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors,
+                           create_gis_data, create_client_report, exporting_types,
+                           overwriting, uploading_info=uploading_info)
 
 
 @celery_app.task()
@@ -99,7 +99,7 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
                             employee_email=project_manager_email)
 
     executor = gbc.GRSEmployee(employee_name=uploader_name,
-                              employee_email=uploader_email)
+                               employee_email=uploader_email)
 
     if surveyor_name is not None:
         surveyor = gbc.Surveyor(employee_name=surveyor_name,
@@ -125,21 +125,18 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
     ppp_automation_worker.run()
 
 
-def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
-                       exporting_types, exporting_profiles, overwriting,
-                       notify_pm, uploading_info):
+def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data,
+                       create_client_report,
+                       exporting_types, overwriting, uploading_info):
     logger_request.info('Running automation for {}'.format(uploaded_file))
 
     worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
                                                                 tracking_id=tracking_id,
                                                                 create_gis_data=create_gis_data,
                                                                 create_reports=create_client_report,
-                                                                exporting_profiles=exporting_profiles,
                                                                 exporting_types=exporting_types,
                                                                 overwriting=overwriting,
-                                                                notify_pm=notify_pm,
                                                                 uploading_info=uploading_info,
-                                                                raise_invalid_connection_error=raise_invalid_errors,
-                                                                make_field_sketch=make_field_sketch)
+                                                                raise_invalid_connection_error=raise_invalid_errors)
 
     worker.automatic_processing()
