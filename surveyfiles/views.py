@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import time
 
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
@@ -30,14 +31,14 @@ class JobSetUpView(SuccessMessageMixin, FormView):
                       " Please wait for result emails"
     success_url = reverse_lazy('surveyfiles:sketch_pdf_setup_view')
 
-    def send_email(self, job_no):
+    def send_email(self, job_no, log_path):
         recipient_list = ['gis@globalraymac.ca']
         if self.request.user is not None:
             recipient_list.append(self.request.user.email)
 
         send_mail(
             subject='{} job sketch pdf set up is requested'.format(job_no),
-            message='Sketch pdf will be created for job {}.\n\n'.format(job_no),
+            message='Sketch pdf will be created for job {}.\n\nChecking log:\n{}\n\n'.format(job_no, log_path),
             from_email=EMAIL_HOST_USER,
             recipient_list=recipient_list
         )
@@ -52,8 +53,10 @@ class JobSetUpView(SuccessMessageMixin, FormView):
         user = self.request.user
         user_id = user.id
         # print(job_no, user_id)
-        self.send_email(job_no)
-        args = (job_no, user_id)
+        log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
+                                .format(job_no, user_id, time.strftime('%Y%m%d_%H%M%S')))
+        self.send_email(job_no, log_path)
+        args = (job_no, user_id, log_path)
         job_sketch_setup.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
