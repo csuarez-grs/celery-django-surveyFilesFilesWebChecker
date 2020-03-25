@@ -51,12 +51,12 @@ class JobSetUpView(SuccessMessageMixin, FormView):
     def form_valid(self, form):
         job_no = str(form.cleaned_data.get('job_no')).upper()
         user = self.request.user
-        user_id = user.id
+        user_name = user.username
         # print(job_no, user_id)
         log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
-                                .format(job_no, user_id, time.strftime('%Y%m%d_%H%M%S')))
+                                .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         self.send_email(job_no, log_path)
-        args = (job_no, user_id, log_path)
+        args = (job_no, user_name, log_path)
         job_sketch_setup.si(*args) \
             .set(queue=task_queue) \
             .apply_async()

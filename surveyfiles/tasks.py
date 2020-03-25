@@ -42,10 +42,10 @@ from SurveyFilesWebChecker.settings import logger_request
 #         print('Errors: {}'.format(str(e)))
 
 @celery_app.task()
-def job_sketch_setup(job_no, user_id, log_path):
+def job_sketch_setup(job_no, user_name, log_path):
     job_folder = ma.get_latitude_job_folder(job_no)
     if os.path.isdir(job_folder):
-        js = field_sketch_pdf.JobSetUpFieldSketchPDF(job_no=job_no, job_folder=job_folder, user=user_id,
+        js = field_sketch_pdf.JobSetUpFieldSketchPDF(job_no=job_no, job_folder=job_folder, user=user_name,
                                                      overwriting=False, logger_objs=[None, log_path])
         js.make_pdf()
 
