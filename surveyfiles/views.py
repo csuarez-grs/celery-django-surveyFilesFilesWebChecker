@@ -5,7 +5,7 @@ import os
 
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, FormView
 # Create your views here.
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -13,12 +13,67 @@ from pure_pagination.mixins import PaginationMixin
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 
 from .filters import SurveyFileAutomationFilter
-from .forms import SurveyFileAutomationForm, PPPFileAutomationForm
+from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm
 from .models import SurveyFileAutomation
 from .tables import SurveyFileAutomationTable
 from .tasks import *
 
 from SurveyFilesWebChecker.settings import logger_request, task_queue
+from django.core.mail import send_mail
+from SurveyFilesWebChecker.settings import EMAIL_HOST_USER
+
+
+class JobSetUpView(SuccessMessageMixin, FormView):
+    template_name = 'surveyfiles/job_setup.html'
+    form_class = JobSetUpForm
+    success_message = "%(job_no)s sketch pdf setup is submitted successfully !" \
+                      " Please wait for result emails"
+    success_url = reverse_lazy('surveyfiles:sketch_pdf_setup_view')
+
+    def send_email(self, job_no):
+        recipient_list = ['gis@globalraymac.ca']
+        if self.request.user is not None:
+            recipient_list.append(self.request.user.email)
+
+        send_mail(
+            subject='{} job sketch pdf set up is requested'.format(job_no),
+            message='Sketch pdf will be created for job {}.\n\n'.format(job_no),
+            from_email=EMAIL_HOST_USER,
+            recipient_list=recipient_list
+        )
+
+    # def get_form_kwargs(self):
+    #     kwargs = super(JobSetUpView, self).get_form_kwargs()
+    #     kwargs.update({'user': self.request.user})
+    #     return kwargs
+
+    def form_valid(self, form):
+        job_no = form.cleaned_data.get('job_no')
+        user = self.request.user
+        user_id = user.id
+        print(job_no, user_id)
+        self.send_email(job_no)
+        args = (job_no, user_id)
+        job_sketch_setup.si(*args) \
+            .set(queue=task_queue) \
+            .apply_async()
+        return super(JobSetUpView, self).form_valid(form)
+
+    def get_success_message(self, cleaned_data):
+        print('clean data: {}'.format(cleaned_data))
+        job_no = cleaned_data.get('job_no')
+        print('Job no: {}'.format(job_no))
+
+        # args = (document_path, tracking_id, raise_invalid_errors, create_gis_data, create_client_report,
+        #         exporting_types,
+        #         overwriting, uploading_info)
+        #
+        # quality_check_jxl_task = quality_check_jxl.si(*args).set(queue=task_queue)
+        # quality_check_jxl_task.apply_async()
+
+        return self.success_message % dict(
+            job_no=job_no,
+        )
 
 
 class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, ListView):

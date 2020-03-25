@@ -1,0 +1,37 @@
+{% extends 'surveyfiles/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Fortis Sketch PDF SetUp{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <div style="display: flex; align-items: center; margin: 10px 0">
+                    <h1 class="mt-2 page-title" style="margin: 0">Fortis Sketch PDF SetUp</h1>
+                </div>
+                <p class="mt-2 notes">Send a request to set up all sites PDF</p>
+                <hr class="mt-0 mb-4">
+                <div>
+                    {% if messages %}
+                        <div class="alert-areas">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="buttons">
+                            <button type="submit" class="btn btn-success small-button">Upload</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -429,3 +429,7 @@ class PPPFileAutomationForm(forms.ModelForm):
         logger_request.info('Saving in form successfully', extra={'username': self.user.username})
 
         return new_jxl_obj
+
+
+class JobSetUpForm(forms.Form):
+    job_no = forms.CharField(label='Fortis Job No', max_length=8)

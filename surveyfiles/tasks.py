@@ -5,6 +5,9 @@ if automation_folder not in sys.path:
     sys.path.append(automation_folder)
 
 import fortis_jxl_automation_from_web as fortis_web_automation
+import field_sketch_pdf
+import Master_Functions as ma
+import os
 
 try:
     import ppp_automation
@@ -37,6 +40,14 @@ from SurveyFilesWebChecker.settings import logger_request
 #         user.email_user(msg_subject, msg_content)
 #     except Exception as e:
 #         print('Errors: {}'.format(str(e)))
+
+@celery_app.task()
+def job_sketch_setup(job_no, user_id):
+    job_folder = ma.get_latitude_job_folder(job_no)
+    if os.path.isdir(job_folder):
+        js = field_sketch_pdf.JobSetUpFieldSketchPDF(job_no=job_no, job_folder=job_folder, user=user_id,
+                                                     overwriting=False)
+        js.make_pdf()
 
 
 @celery_app.task()
