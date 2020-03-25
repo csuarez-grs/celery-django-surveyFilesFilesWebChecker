@@ -7,8 +7,9 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-8">
-                <div style="display: flex; align-items: center; margin: 10px 0">
-                    <h1 class="mt-2 page-title" style="margin: 0">Fortis Sketch PDF SetUp</h1>
+                <div style="display: inline-flex; align-items: center; margin: 10px 0">
+                    <h1 class="mt-2 page-title" style="margin: 0">Fortis Sketch PDF SetUp </h1>
+                    <h2 style="margin: 0">({{ worker_status }})</h2>
                 </div>
                 <p class="mt-2 notes">Send a request to set up all sites PDF</p>
                 <hr class="mt-0 mb-4">
@@ -25,7 +26,7 @@
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="buttons">
-                            <button type="submit" class="btn btn-success small-button">Upload</button>
+                            <button type="submit" class="btn btn-success small-button">Submit</button>
                         </div>
                     </form>
                 </div>

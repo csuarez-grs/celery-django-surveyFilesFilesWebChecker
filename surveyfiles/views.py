@@ -48,10 +48,10 @@ class JobSetUpView(SuccessMessageMixin, FormView):
     #     return kwargs
 
     def form_valid(self, form):
-        job_no = form.cleaned_data.get('job_no')
+        job_no = str(form.cleaned_data.get('job_no')).upper()
         user = self.request.user
         user_id = user.id
-        print(job_no, user_id)
+        # print(job_no, user_id)
         self.send_email(job_no)
         args = (job_no, user_id)
         job_sketch_setup.si(*args) \
@@ -74,6 +74,17 @@ class JobSetUpView(SuccessMessageMixin, FormView):
         return self.success_message % dict(
             job_no=job_no,
         )
+
+    def get_context_data(self, **kwargs):
+        context = super(JobSetUpView, self).get_context_data(**kwargs)
+
+        extra = {'username': self.request.user.username}
+
+        worker_status = get_worker_status(self, extra)
+        if worker_status is not None:
+            context['worker_status'] = worker_status
+
+        return context
 
 
 class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, ListView):
@@ -111,29 +122,38 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
         context = super(SurveyFilesCardsFilterView, self).get_context_data(**kwargs)
 
         extra = {'username': self.request.user.username}
-        if self.request.user is not None:
-            try:
-                results = celery_app.control.ping()
-                good_worker_count = 0
-                total_worker = len(results)
-                for index, worker_dict in enumerate(results):
-                    values = worker_dict.values()
-                    for response_dict in values:
-                        good_action = response_dict.get('ok')
-                        if str(good_action).lower() == 'pong':
-                            good_worker_count += 1
-                if good_worker_count == 0:
-                    worker_status = 'No any worker ({} assigned workers) is working !!!'.format(total_worker)
-                else:
-                    worker_status = '{} of {} worker(s) are working.'.format(good_worker_count, total_worker)
 
-                context['worker_status'] = worker_status
-
-                logger_request.info('Worker status: {}'.format(context['worker_status']), extra=extra)
-            except Exception as e:
-                logger_request.exception('Failed to get worker status: {}'.format(e), extra=extra)
+        worker_status = get_worker_status(self, extra)
+        if worker_status is not None:
+            context['worker_status'] = worker_status
 
         return context
+
+
+def get_worker_status(self, extra):
+    if self.request.user is not None:
+        try:
+            results = celery_app.control.ping()
+            good_worker_count = 0
+            total_worker = len(results)
+            for index, worker_dict in enumerate(results):
+                values = worker_dict.values()
+                for response_dict in values:
+                    good_action = response_dict.get('ok')
+                    if str(good_action).lower() == 'pong':
+                        good_worker_count += 1
+            if good_worker_count == 0:
+                worker_status = 'No any worker ({} assigned workers) is working !!!'.format(total_worker)
+            else:
+                worker_status = '{} of {} worker(s) are working.'.format(good_worker_count, total_worker)
+
+            logger_request.info('Worker status: {}'.format(worker_status), extra=extra)
+            return worker_status
+        except Exception as e:
+            logger_request.exception('Failed to get worker status: {}'.format(e), extra=extra)
+            return None
+    else:
+        return None
 
 
 class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
