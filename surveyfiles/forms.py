@@ -144,6 +144,14 @@ class SurveyFileAutomationForm(forms.ModelForm):
         new_jxl_obj.uploader_name = '{} {}'.format(user.first_name, user.last_name)
         new_jxl_obj.uploader_email = user.email
 
+        exporting_types = [item.strip() for item in new_jxl_obj.exporting_types_selected
+                           if len(item.strip()) > 0]
+
+        if len(exporting_types) > 0:
+            new_jxl_obj.create_client_report = True
+        else:
+            new_jxl_obj.create_client_report = False
+
         logger_request.info('Saving in form', extra={'username': self.user.username})
         new_jxl_obj.save()
         logger_request.info('Saving in form successfully', extra={'username': self.user.username})
