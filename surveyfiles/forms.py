@@ -170,7 +170,7 @@ class DataExportForm(forms.Form):
                                                          widget=forms.widgets.CheckboxSelectMultiple,
                                                          required=False)
 
-    overwriting = forms.BooleanField(label='Overwriting', initial=True, required=True)
+    overwriting = forms.BooleanField(label='Overwriting', initial=False, required=False)
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
