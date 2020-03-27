@@ -1,0 +1,38 @@
+{% extends 'surveyfiles/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Fortis Data Exporting{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <div style="display: inline-flex; align-items: center; margin: 10px 0">
+                    <h1 class="mt-2 page-title" style="margin: 0">Fortis Data Exporting </h1>
+                    <h2 style="margin: 0">({{ worker_status }})</h2>
+                </div>
+                <p class="mt-2 notes">Export data files based on GIS data in the provided site geodatabase path</p>
+                <hr class="mt-0 mb-4">
+                <div>
+                    {% if messages %}
+                        <div class="alert-areas">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="buttons">
+                            <button type="submit" class="btn btn-success small-button">Submit</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

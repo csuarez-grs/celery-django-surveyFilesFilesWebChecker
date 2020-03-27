@@ -51,6 +51,17 @@ def job_sketch_setup(job_no, user_name, log_path):
 
 
 @celery_app.task()
+def data_export(job_no, site_no, site_db_path, exporting_types, user_name, log_path, overwriting):
+    if fortis_web_automation.field_sketch_pdf_type in exporting_types:
+        s = field_sketch_pdf.SingleSiteFieldSketchPDF(job_no=job_no, site_no=site_no, site_db_path=site_db_path,
+                                                      user=user_name,
+                                                      overwriting=overwriting,
+                                                      logger_objs=[None, log_path])
+
+        s.run()
+
+
+@celery_app.task()
 def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_field_folder):
     try:
         # lookup user by id and send them a message

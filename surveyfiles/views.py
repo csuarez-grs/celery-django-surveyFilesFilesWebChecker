@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 import time
 
 from django.contrib.messages.views import SuccessMessageMixin
@@ -14,8 +15,8 @@ from pure_pagination.mixins import PaginationMixin
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 
 from .filters import SurveyFileAutomationFilter
-from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm
-from .models import SurveyFileAutomation
+from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm, DataExportForm
+from .models import SurveyFileAutomation, fortis_job_no_pattern
 from .tables import SurveyFileAutomationTable
 from .tasks import *
 
@@ -284,144 +285,78 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
     #     return reverse('jxlfiles:jxl_list_view')
 
 
-class DataExportView(SuccessMessageMixin, CreateView):
-    model = SurveyFileAutomation
-    form_class = SurveyFileAutomationForm
-    template_name = 'surveyfiles/jxl_upload.html'
-    success_url = reverse_lazy('surveyfiles:jxl_create_view')
-    # success_url = '/success/'
-    success_message = "%(file_name)s - Site %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
-                      " Please wait for QC emails"
+class DataExportView(SuccessMessageMixin, FormView):
+    template_name = 'surveyfiles/data_export.html'
+    form_class = DataExportForm
+    success_message = "%(exporting_types)s will be created based on the data in %(site_db_path)s !" \
+                      " Please wait for result emails"
+    success_url = reverse_lazy('surveyfiles:data_export_view')
 
     def get_form_kwargs(self):
         kwargs = super(DataExportView, self).get_form_kwargs()
         kwargs.update({'user': self.request.user})
         return kwargs
 
-    def form_invalid(self, form):
-        logger_request.info('form is not valid: {}'.format(self.get_context_data(form=form)),
-                            extra={'username': self.request.user.username})
-        return self.render_to_response(self.get_context_data(form=form))
+    def send_email(self, job_no, site_db_path, exporting_types, log_path):
+        recipient_list = ['gis@globalraymac.ca']
+        if self.request.user is not None:
+            recipient_list.append(self.request.user.email)
+
+        send_mail(
+            subject='{} job data exporting is requested'.format(job_no),
+            message='{} will be created based on data in geodatabase as below for job {}.'
+                    '\n{}\n\nChecking log:\n{}\n\n'.format(','.join(exporting_types),
+                                                           job_no, site_db_path, log_path),
+            from_email=EMAIL_HOST_USER,
+            recipient_list=recipient_list
+        )
 
     def form_valid(self, form):
-        logger_request.info('validating form', extra={'username': self.request.user.username})
-        logger_request.info('user: {}'.format(self.request.user.username),
-                            extra={'username': self.request.user.username})
-        logger_request.info('call saving in form', extra={'username': self.request.user.username})
-        form.save()
-        logger_request.info('saved in form successfully', extra={'username': self.request.user.username})
-        logger_request.info('Document: {}'.format(self.request.FILES[u'document']),
-                            extra={'username': self.request.user.username})
-        return super(DataExportView, self).form_valid(form)
-
-        # return self.render_to_response(self.get_context_data(
-        #     form=form,
-        #     uploaded_file=self.request.FILES[u'document']))
-
-    def get_success_message(self, cleaned_data):
-        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.request.user.username})
-        logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
-                            extra={'username': self.request.user.username})
-        uploader_usernane = self.request.user.username
-        job_no = self.object.job_no
-        site_no = self.object.site_no
-        utm_sr_name = self.object.utm_sr_name
-        scale_value = self.object.scale_value
-        document_path = self.object.document.file.name
-        document_name = os.path.basename(document_path)
-        uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
-        target_field_folder = self.object.target_field_folder
-
-        args = (uploader_usernane, job_no, document_name, uploaded_time_str, target_field_folder)
-        notify_uploading.si(*args) \
+        site_db_path = form.cleaned_data.get('site_db_path')
+        exporting_types_selected = form.cleaned_data.get('exporting_types_selected')
+        exporting_types = [item.strip() for item in exporting_types_selected
+                           if len(item.strip()) > 0]
+        overwriting = form.cleaned_data.get('overwriting')
+        # overwriting = False
+        job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
+        site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
+        site_no = int(re.search(site_no_pattern, os.path.basename(site_db_path)).groups()[0])
+        user = self.request.user
+        user_name = user.username
+        # print(job_no, user_id)
+        log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
+                                .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
+        self.send_email(job_no, site_db_path, exporting_types, log_path)
+        args = (job_no, site_no, site_db_path, exporting_types, user_name, log_path, overwriting)
+        data_export.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
-        # uploader = self.object.uploader
-        # uploader_email = self.object.uploader_email
-        # uploaded_time = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
-        # project_manager = self.object.project_manager
-        # project_manager_email = self.object.project_manager_email
-        tracking_id = self.object.tracking_id
+        return super(DataExportView, self).form_valid(form)
 
-        # if self.object.create_data_report == 1 and os.path.basename(document_path)[-4:].lower() == '.jxl':
-
-        if self.object.raise_invalid_errors == 1:
-            raise_invalid_errors = True
-        else:
-            raise_invalid_errors = False
-
-        if self.object.site_data_db is None:
-            site_data_db = None
-            if self.object.create_gis_data == 1:
-                create_gis_data = True
-            else:
-                create_gis_data = False
-        else:
-            create_gis_data = False
-            site_data_db = self.object.site_data_db
-
-        if self.object.create_client_report == 1:
-            create_client_report = True
-        else:
-            create_client_report = False
-
-        if self.object.overwriting == 1:
-            overwriting = True
-        else:
-            overwriting = False
-
-        if self.object.notify_surveyor == 1:
-            notify_surveyor = True
-        else:
-            notify_surveyor = False
-
-        if self.object.notify_pm == 1:
-            notify_pm = True
-        else:
-            notify_pm = False
-
-        exporting_types = [item.strip() for item in self.object.exporting_types_selected
+    def get_success_message(self, cleaned_data):
+        print('clean data: {}'.format(cleaned_data))
+        site_db_path = cleaned_data.get('site_db_path')
+        exporting_types_selected = cleaned_data.get('exporting_types_selected')
+        exporting_types = [item.strip() for item in exporting_types_selected
                            if len(item.strip()) > 0]
-
-        uploading_info = [
-            self.object.job_no,
-            self.object.site_no,
-            self.object.uploader,
-            self.object.uploader_email,
-            self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S'),
-            self.object.project_manager,
-            self.object.project_manager_email,
-            self.object.utm_sr_name,
-            self.object.scale_value
-        ]
-
-        args = (document_path, tracking_id, raise_invalid_errors, site_data_db, create_gis_data, create_client_report,
-                exporting_types,
-                overwriting, notify_surveyor, notify_pm, uploading_info)
-
-        quality_check_jxl_task = quality_check_jxl.si(*args).set(queue=task_queue)
-        quality_check_jxl_task.apply_async()
+        print('Site db path: {}'.format(site_db_path))
 
         return self.success_message % dict(
             cleaned_data,
-            file_name=os.path.basename(self.object.document.file.name),
-            site_no=site_no,
-            utm_sr_name=utm_sr_name,
-            scale_value=scale_value,
-            # uploader=self.object.uploader
+            site_db_path=os.path.basename(site_db_path),
+            exporting_types=','.join(exporting_types),
         )
 
-    # def get_context_data(self, **kwargs):
-    #     context = super(CreateJXLFileAutomationView, self).get_context_data(**kwargs)
-    #     try:
-    #         context['uploaded_file'] = self.request.FILES[u'document']
-    #     except:
-    #         pass
-    #
-    #     return context
+    def get_context_data(self, **kwargs):
+        context = super(DataExportView, self).get_context_data(**kwargs)
 
-    # def get_success_url(self, *args, **kwargs):
-    #     return reverse('jxlfiles:jxl_list_view')
+        extra = {'username': self.request.user.username}
+
+        worker_status = get_worker_status(self, extra)
+        if worker_status is not None:
+            context['worker_status'] = worker_status
+
+        return context
 
 
 class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):

@@ -28,6 +28,10 @@
             <a class="huge-button" href="{% url 'surveyfiles:sketch_pdf_setup_view' %}">Job Sketch PDF Set Up</a>
         </div>
 
+        <div style="text-align: center">
+            <a class="huge-button" href="{% url 'surveyfiles:data_export_view' %}">Data Exporting</a>
+        </div>
+
 
         {% if request.user.is_superuser %}
             <div style="text-align: center">

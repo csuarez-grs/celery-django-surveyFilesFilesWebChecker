@@ -21,7 +21,7 @@ from multiselectfield import MultiSelectField
 from core.models import GRSJobInfo
 
 from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info, \
-    parse_surveyor_from_file_name
+    parse_surveyor_from_file_name, field_sketch_pdf_type
 
 fortis_job_no_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
 
