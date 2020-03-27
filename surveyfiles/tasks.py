@@ -56,7 +56,8 @@ def data_export(job_no, site_no, site_db_path, exporting_types, user_name, log_p
         s = field_sketch_pdf.SingleSiteFieldSketchPDF(job_no=job_no, site_no=site_no, site_db_path=site_db_path,
                                                       user=user_name,
                                                       overwriting=overwriting,
-                                                      logger_objs=[None, log_path])
+                                                      logger_objs=[None, log_path],
+                                                      send_results_email=True)
 
         s.run()
 
