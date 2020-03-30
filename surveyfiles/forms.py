@@ -21,8 +21,8 @@ site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
 
 
 class SurveyFileAutomationForm(forms.ModelForm):
-    raise_invalid_errors = forms.BooleanField(initial=True, required=False,
-                                              label='Raise Invalid Profile Connection Errors')
+    # raise_invalid_errors = forms.BooleanField(initial=True, required=False,
+    #                                           label='Raise Invalid Profile Connection Errors')
     create_gis_data = forms.BooleanField(initial=True, required=False)
     # create_client_report = forms.BooleanField(initial=False, required=False)
     # exporting_profile_no = forms.CharField(initial=default_all_profiles_str, required=False,
@@ -38,7 +38,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
         model = SurveyFileAutomation
         fields = ['document', 'site_no', 'extract_input_values',
                   'utm_sr_name', 'scale_value',
-                  'raise_invalid_errors',
+                  # 'raise_invalid_errors',
                   'create_gis_data',
                   'exporting_types_selected',
                   'overwriting']

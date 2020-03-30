@@ -91,20 +91,19 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
 
 @celery_app.task()
-def quality_check_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data,
+def quality_check_jxl(uploaded_file, tracking_id, create_gis_data,
                       create_client_report,
                       exporting_types, overwriting, uploading_info):
     logger_request.info('QC Check {}'.format(uploaded_file))
     qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
                                                                    tracking_id=tracking_id,
                                                                    logger_name='QC',
-                                                                   uploading_info=uploading_info,
-                                                                   raise_invalid_connection_error=raise_invalid_errors)
+                                                                   uploading_info=uploading_info)
 
     qc_worker.qc_check()
 
     if qc_worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
-        run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors,
+        run_automation_jxl(uploaded_file, tracking_id,
                            create_gis_data, create_client_report, exporting_types,
                            overwriting, uploading_info=uploading_info)
 
@@ -148,7 +147,7 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
     ppp_automation_worker.run()
 
 
-def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_gis_data,
+def run_automation_jxl(uploaded_file, tracking_id, create_gis_data,
                        create_client_report,
                        exporting_types, overwriting, uploading_info):
     logger_request.info('Running automation for {}'.format(uploaded_file))
@@ -159,7 +158,6 @@ def run_automation_jxl(uploaded_file, tracking_id, raise_invalid_errors, create_
                                                                 create_reports=create_client_report,
                                                                 exporting_types=exporting_types,
                                                                 overwriting=overwriting,
-                                                                uploading_info=uploading_info,
-                                                                raise_invalid_connection_error=raise_invalid_errors)
+                                                                uploading_info=uploading_info)
 
     worker.automatic_processing()
