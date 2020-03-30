@@ -153,6 +153,9 @@ class SurveyFileAutomationForm(forms.ModelForm):
         else:
             new_jxl_obj.create_client_report = False
 
+        new_jxl_obj.raise_invalid_errors = False  # model still has this field, so make it False since it is not
+        # allowed to insert Null to Boolean field
+
         logger_request.info('Saving in form', extra={'username': self.user.username})
         new_jxl_obj.save()
         logger_request.info('Saving in form successfully', extra={'username': self.user.username})

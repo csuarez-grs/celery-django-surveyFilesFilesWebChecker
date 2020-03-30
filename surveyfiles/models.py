@@ -250,10 +250,10 @@ class SurveyFileAutomation(models.Model):
                                    choices=project_coordinates_choices)
     scale_value = MinMaxFloat(verbose_name='Scale Value', blank=True, null=True,
                               min_value=min_scale_value, max_value=max_scale_value)
-    # raise_invalid_errors = models.BooleanField(db_column='Raise Invalid Errors',
-    #                                            verbose_name='Raise Invalid Profile Connection Errors',
-    #                                            default=True, blank=False, null=False,
-    #                                            help_text='Raise Invalid Profile Connection Errors')
+    raise_invalid_errors = models.BooleanField(db_column='Raise Invalid Errors',
+                                               verbose_name='Raise Invalid Profile Connection Errors',
+                                               default=True, blank=False, null=False,
+                                               help_text='Raise Invalid Profile Connection Errors')
     site_data_db = models.CharField(db_column='Site Data DB', max_length=500, blank=True, null=True,
                                     validators=[validate_site_data_db],
                                     help_text=r'Paste one valid site db to skip "create gis data"'
