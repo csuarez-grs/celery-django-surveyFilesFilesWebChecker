@@ -1,5 +1,5 @@
 import sys
-from SurveyFilesWebChecker.settings import automation_folder
+from SurveyFilesWebChecker.settings import automation_folder, sub_working_folder
 
 if automation_folder not in sys.path:
     sys.path.append(automation_folder)
@@ -80,6 +80,9 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
             msg_subject += ' (Validation)'
             msg_content = '<p>Uploader: {}<br>File: {}<br>Time: {}</p><br>' \
                 .format(user_name, uploaded_file, uploaded_time_str)
+
+        if sub_working_folder == 'Dev':
+            msg_subject += ' ({})'.format(sub_working_folder)
 
         html_content = msg_content
 

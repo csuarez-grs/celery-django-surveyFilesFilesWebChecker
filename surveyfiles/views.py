@@ -37,8 +37,12 @@ class JobSetUpView(SuccessMessageMixin, FormView):
         if self.request.user is not None:
             recipient_list.append(self.request.user.email)
 
+        subject = '{} job sketch pdf set up is requested'.format(job_no)
+        if sub_working_folder == 'Dev':
+            subject += ' ({})'.format(sub_working_folder)
+
         send_mail(
-            subject='{} job sketch pdf set up is requested'.format(job_no),
+            subject=subject,
             message='Sketch pdf will be created for job {}.\n\nChecking log:\n{}\n\n'.format(job_no, log_path),
             from_email=EMAIL_HOST_USER,
             recipient_list=recipient_list
@@ -302,8 +306,12 @@ class DataExportView(SuccessMessageMixin, FormView):
         if self.request.user is not None:
             recipient_list.append(self.request.user.email)
 
+        subject = '{} job data exporting is requested'.format(job_no)
+        if sub_working_folder == 'Dev':
+            subject += ' ({})'.format(sub_working_folder)
+
         send_mail(
-            subject='{} job data exporting is requested'.format(job_no),
+            subject=subject,
             message='{} will be created based on data in geodatabase as below for job {}.'
                     '\n{}\n\nChecking log:\n{}\n\n'.format(','.join(exporting_types),
                                                            job_no, site_db_path, log_path),
