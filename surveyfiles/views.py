@@ -334,7 +334,7 @@ class DataExportView(SuccessMessageMixin, FormView):
         user = self.request.user
         user_name = user.username
         # print(job_no, user_id)
-        log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
+        log_path = os.path.join(fortis_web_automation.log_folder, 'DataExporting_{}_{}_{}.txt' \
                                 .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         self.send_email(job_no, site_db_path, exporting_types, log_path)
         args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, user_name, log_path, overwriting)
