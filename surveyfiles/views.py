@@ -260,7 +260,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             self.object.scale_value
         ]
 
-        args = (document_path, tracking_id, create_gis_data, create_client_report,
+        uploader = self.object.uploader
+        args = (document_path, uploader, tracking_id, create_gis_data, create_client_report,
                 exporting_types,
                 overwriting, uploading_info)
 
@@ -321,6 +322,7 @@ class DataExportView(SuccessMessageMixin, FormView):
 
     def form_valid(self, form):
         site_db_path = form.cleaned_data.get('site_db_path')
+        source_jxl_path = form.cleaned_data.get('source_jxl_path')
         exporting_types_selected = form.cleaned_data.get('exporting_types_selected')
         exporting_types = [item.strip() for item in exporting_types_selected
                            if len(item.strip()) > 0]
@@ -335,7 +337,7 @@ class DataExportView(SuccessMessageMixin, FormView):
         log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
                                 .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         self.send_email(job_no, site_db_path, exporting_types, log_path)
-        args = (job_no, site_no, site_db_path, exporting_types, user_name, log_path, overwriting)
+        args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, user_name, log_path, overwriting)
         data_export.si(*args) \
             .set(queue=task_queue) \
             .apply_async()

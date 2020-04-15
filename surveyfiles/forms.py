@@ -165,11 +165,12 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
 class DataExportForm(forms.Form):
     site_db_path = forms.CharField(label='Site GeoDatabase Path', max_length=500)
-    exports = [field_sketch_pdf_type]
-    exports_options = [(item, item) for item in exports]
+    source_jxl_path = forms.CharField(label='Source JXL Path', max_length=500, required=False)
+    # exports = [field_sketch_pdf_type]
+    # exports_options = [(item, item) for item in exports]
 
-    exporting_types_selected = forms.MultipleChoiceField(choices=exports_options,
-                                                         initial=tuple(exports),
+    exporting_types_selected = forms.MultipleChoiceField(choices=exporting_types_options,
+                                                         initial=tuple(default_exporting_types_options),
                                                          widget=forms.widgets.CheckboxSelectMultiple,
                                                          required=False)
 
@@ -182,6 +183,21 @@ class DataExportForm(forms.Form):
     def clean(self):
         cleaned_data = self.cleaned_data
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+
+        source_jxl_path = self.cleaned_data.get('source_jxl_path')
+        if source_jxl_path is not None and len(source_jxl_path.strip()) > 0:
+            if not os.path.isfile(source_jxl_path) or source_jxl_path[-4:].lower() != '.jxl':
+                raise forms.ValidationError(
+                    _('Please provide valid jxl path !!!')
+                )
+
+            elif not re.search(fortis_job_no_pattern, os.path.basename(source_jxl_path)):
+                raise forms.ValidationError(
+                    _('No Fortis job "xxxFxxxx" found in jxl file name !!!')
+                )
+        else:
+            source_jxl_path = None
+            self.cleaned_data['source_jxl_path'] = source_jxl_path
 
         site_db_path = self.cleaned_data.get('site_db_path')
         if site_db_path is not None:
@@ -203,6 +219,15 @@ class DataExportForm(forms.Form):
 
             site_db_path = site_db_path.replace('R:', r'\\grs.com\DFS\JOBS')
             self.cleaned_data['site_db_path'] = site_db_path
+
+        if site_db_path is not None and os.path.isdir(site_db_path) and source_jxl_path is not None\
+                and os.path.isfile(source_jxl_path):
+            site_db_job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
+            jxl_job_no = re.search(fortis_job_no_pattern, os.path.basename(source_jxl_path)).groups()[0]
+            if site_db_job_no.upper() != jxl_job_no.upper():
+                raise forms.ValidationError(
+                    _('Site db job no {} is not the same as jxl job no {}'.format(site_db_job_no, jxl_job_no))
+                )
 
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 

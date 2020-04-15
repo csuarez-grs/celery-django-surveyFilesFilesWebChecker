@@ -51,15 +51,21 @@ def job_sketch_setup(job_no, user_name, log_path):
 
 
 @celery_app.task()
-def data_export(job_no, site_no, site_db_path, exporting_types, user_name, log_path, overwriting):
-    if fortis_web_automation.field_sketch_pdf_type in exporting_types:
-        s = field_sketch_pdf.SingleSiteFieldSketchPDF(job_no=job_no, site_no=site_no, site_db_path=site_db_path,
-                                                      user=user_name,
-                                                      overwriting=overwriting,
-                                                      logger_objs=[None, log_path],
-                                                      send_results_email=True)
+def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, user_name, log_path, overwriting):
+    w = fortis_web_automation.FortisJXLWebAutomationWorker(
+        job_no=job_no, site_no=site_no,
+        uploader=user_name,
+        uploaded_file=uploaded_file,
+        site_db_path=site_db_path,
+        exporting_types=exporting_types,
+        use_temporary_job_folder=True,
+        overwriting=overwriting,
+        logger_objs=[None, log_path],
+    )
 
-        s.run()
+    w.compile_data_path()
+    w.make_outputs()
+    w.sending_automatic_results_email()
 
 
 @celery_app.task()
@@ -94,11 +100,11 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
 
 @celery_app.task()
-def quality_check_jxl(uploaded_file, tracking_id, create_gis_data,
+def quality_check_jxl(uploaded_file, uploader, tracking_id, create_gis_data,
                       create_client_report,
                       exporting_types, overwriting, uploading_info):
     logger_request.info('QC Check {}'.format(uploaded_file))
-    qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
+    qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, uploader=uploader,
                                                                    tracking_id=tracking_id,
                                                                    logger_name='QC',
                                                                    uploading_info=uploading_info)
@@ -106,7 +112,7 @@ def quality_check_jxl(uploaded_file, tracking_id, create_gis_data,
     qc_worker.qc_check()
 
     if qc_worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
-        run_automation_jxl(uploaded_file, tracking_id,
+        run_automation_jxl(uploaded_file, uploader, tracking_id,
                            create_gis_data, create_client_report, exporting_types,
                            overwriting, uploading_info=uploading_info)
 
@@ -150,12 +156,12 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
     ppp_automation_worker.run()
 
 
-def run_automation_jxl(uploaded_file, tracking_id, create_gis_data,
+def run_automation_jxl(uploaded_file, uploader, tracking_id, create_gis_data,
                        create_client_report,
                        exporting_types, overwriting, uploading_info):
     logger_request.info('Running automation for {}'.format(uploaded_file))
 
-    worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file,
+    worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, uploader=uploader,
                                                                 tracking_id=tracking_id,
                                                                 create_gis_data=create_gis_data,
                                                                 create_reports=create_client_report,
