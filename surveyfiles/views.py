@@ -261,7 +261,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         ]
 
         uploader = self.object.uploader
-        args = (document_path, uploader, tracking_id, create_gis_data, create_client_report,
+        args = (job_no, site_no, document_path, uploader, tracking_id, create_gis_data, create_client_report,
                 exporting_types,
                 overwriting, uploading_info)
 

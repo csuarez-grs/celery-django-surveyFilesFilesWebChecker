@@ -100,11 +100,12 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
 
 @celery_app.task()
-def quality_check_jxl(uploaded_file, uploader, tracking_id, create_gis_data,
+def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, create_gis_data,
                       create_client_report,
                       exporting_types, overwriting, uploading_info):
     logger_request.info('QC Check {}'.format(uploaded_file))
-    qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, uploader=uploader,
+    qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
+                                                                   uploaded_file=uploaded_file, uploader=uploader,
                                                                    tracking_id=tracking_id,
                                                                    logger_name='QC',
                                                                    uploading_info=uploading_info)
@@ -112,7 +113,7 @@ def quality_check_jxl(uploaded_file, uploader, tracking_id, create_gis_data,
     qc_worker.qc_check()
 
     if qc_worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
-        run_automation_jxl(uploaded_file, uploader, tracking_id,
+        run_automation_jxl(job_no, site_no, uploaded_file, uploader, tracking_id,
                            create_gis_data, create_client_report, exporting_types,
                            overwriting, uploading_info=uploading_info)
 
@@ -156,12 +157,13 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
     ppp_automation_worker.run()
 
 
-def run_automation_jxl(uploaded_file, uploader, tracking_id, create_gis_data,
+def run_automation_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, create_gis_data,
                        create_client_report,
                        exporting_types, overwriting, uploading_info):
     logger_request.info('Running automation for {}'.format(uploaded_file))
 
-    worker = fortis_web_automation.FortisJXLWebAutomationWorker(uploaded_file=uploaded_file, uploader=uploader,
+    worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
+                                                                uploaded_file=uploaded_file, uploader=uploader,
                                                                 tracking_id=tracking_id,
                                                                 create_gis_data=create_gis_data,
                                                                 create_reports=create_client_report,
