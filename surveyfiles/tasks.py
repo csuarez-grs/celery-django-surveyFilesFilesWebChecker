@@ -92,7 +92,12 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
         html_content = msg_content
 
-        msg = EmailMultiAlternatives(msg_subject, msg_content, gis_email, [user_email, gis_email])
+        if user != 'jxue':
+            cc_emails = ['jxue@globalraymac.ca']
+        else:
+            cc_emails = []
+
+        msg = EmailMultiAlternatives(msg_subject, msg_content, gis_email, [user_email, gis_email], cc=cc_emails)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
     except Exception as e:
