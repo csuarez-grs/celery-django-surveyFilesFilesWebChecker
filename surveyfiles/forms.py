@@ -220,7 +220,7 @@ class DataExportForm(forms.Form):
             site_db_path = site_db_path.replace('R:', r'\\grs.com\DFS\JOBS')
             self.cleaned_data['site_db_path'] = site_db_path
 
-        if site_db_path is not None and os.path.isdir(site_db_path) and source_jxl_path is not None\
+        if site_db_path is not None and os.path.isdir(site_db_path) and source_jxl_path is not None \
                 and os.path.isfile(source_jxl_path):
             site_db_job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
             jxl_job_no = re.search(fortis_job_no_pattern, os.path.basename(source_jxl_path)).groups()[0]
@@ -336,3 +336,15 @@ class PPPFileAutomationForm(forms.ModelForm):
 
 class JobSetUpForm(forms.Form):
     job_no = forms.CharField(label='Fortis Job No', max_length=8)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        super(JobSetUpForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+        job_no = str(cleaned_data['job_no']).strip()
+
+        if not re.match(fortis_job_no_pattern, job_no):
+            raise forms.ValidationError('{} is not Fortis job pattern !!!'.format(job_no))

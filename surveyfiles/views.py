@@ -94,6 +94,11 @@ class JobSetUpView(SuccessMessageMixin, FormView):
 
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super(JobSetUpView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
 
 class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, ListView):
     model = SurveyFileAutomation
