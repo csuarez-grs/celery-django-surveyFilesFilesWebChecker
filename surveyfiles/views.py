@@ -307,7 +307,7 @@ class DataExportView(SuccessMessageMixin, FormView):
         kwargs.update({'user': self.request.user})
         return kwargs
 
-    def send_email(self, job_no, site_db_path, exporting_types, log_path):
+    def send_email(self, job_no, site_db_path, site_no, exporting_types, log_path):
         recipient_list = ['gis@globalraymac.ca']
         if self.request.user is not None:
             recipient_list.append(self.request.user.email)
@@ -318,15 +318,18 @@ class DataExportView(SuccessMessageMixin, FormView):
 
         send_mail(
             subject=subject,
-            message='{} will be created based on data in geodatabase as below for job {}.'
+            message='{} will be created based on data in geodatabase as below for job {} site {}.'
                     '\n{}\n\nChecking log:\n{}\n\n'.format(','.join(exporting_types),
-                                                           job_no, site_db_path, log_path),
+                                                           job_no, site_no,
+                                                           ma.hyperLinkFileFullName(site_db_path),
+                                                           log_path),
             from_email=EMAIL_HOST_USER,
             recipient_list=recipient_list
         )
 
     def form_valid(self, form):
         site_db_path = form.cleaned_data.get('site_db_path')
+        site_no = form.cleaned_data.get('site_no')
         source_jxl_path = form.cleaned_data.get('source_jxl_path')
         exporting_types_selected = form.cleaned_data.get('exporting_types_selected')
         exporting_types = [item.strip() for item in exporting_types_selected
@@ -334,14 +337,17 @@ class DataExportView(SuccessMessageMixin, FormView):
         overwriting = form.cleaned_data.get('overwriting')
         # overwriting = False
         job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
+
         site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
-        site_no = int(re.search(site_no_pattern, os.path.basename(site_db_path)).groups()[0])
+        if site_no is None:
+            site_no = int(re.search(site_no_pattern, os.path.basename(site_db_path)).groups()[0])
+
         user = self.request.user
         user_name = user.username
         # print(job_no, user_id)
         log_path = os.path.join(fortis_web_automation.log_folder, 'DataExporting_{}_{}_{}.txt' \
                                 .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
-        self.send_email(job_no, site_db_path, exporting_types, log_path)
+        self.send_email(job_no, site_db_path, site_no, exporting_types, log_path)
         args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, user_name, log_path, overwriting)
         data_export.si(*args) \
             .set(queue=task_queue) \

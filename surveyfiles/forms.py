@@ -165,6 +165,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
 class DataExportForm(forms.Form):
     site_db_path = forms.CharField(label='Site GeoDatabase Path', max_length=500)
+    site_no = forms.IntegerField(label='Site No (In case all sites data are created in the above single geodatabase !)',
+                                 required=False)
     source_jxl_path = forms.CharField(label='Source JXL Path', max_length=500, required=False)
     # exports = [field_sketch_pdf_type]
     # exports_options = [(item, item) for item in exports]
