@@ -88,7 +88,13 @@ class JobSetUpView(SuccessMessageMixin, FormView):
 
         extra = {'username': self.request.user.username}
 
-        worker_status = get_worker_status(self, extra)
+        worker_status, worker_count = get_worker_status(self, extra)
+
+        if worker_count == 0:
+            self.template_name = 'surveyfiles/errors_page.html'
+            context['errors'] = '<p>No any task worker is running !</p>' \
+                                '<p>Please contact GIS to check the status !</p>'
+
         if worker_status is not None:
             context['worker_status'] = worker_status
 
@@ -136,7 +142,7 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
 
         extra = {'username': self.request.user.username}
 
-        worker_status = get_worker_status(self, extra)
+        worker_status = get_worker_status(self, extra)[0]
         if worker_status is not None:
             context['worker_status'] = worker_status
 
@@ -161,12 +167,12 @@ def get_worker_status(self, extra):
                 worker_status = '{} of {} worker(s) are working.'.format(good_worker_count, total_worker)
 
             logger_request.info('Worker status: {}'.format(worker_status), extra=extra)
-            return worker_status
+            return worker_status, good_worker_count
         except Exception as e:
             logger_request.exception('Failed to get worker status: {}'.format(e), extra=extra)
-            return None
+            return None, 0
     else:
-        return None
+        return None, 0
 
 
 class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
@@ -282,6 +288,23 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             # uploader=self.object.uploader
         )
 
+    def get_context_data(self, **kwargs):
+        context = super(CreateSurveyFileAutomationView, self).get_context_data(**kwargs)
+
+        extra = {'username': self.request.user.username}
+
+        worker_status, worker_count = get_worker_status(self, extra)
+
+        if worker_count == 0:
+            self.template_name = 'surveyfiles/errors_page.html'
+            context['errors'] = '<p>No any task worker is running !</p>' \
+                                '<p>Please contact GIS to check the status !</p>'
+
+        if worker_status is not None:
+            context['worker_status'] = worker_status
+
+        return context
+
     # def get_context_data(self, **kwargs):
     #     context = super(CreateJXLFileAutomationView, self).get_context_data(**kwargs)
     #     try:
@@ -373,7 +396,13 @@ class DataExportView(SuccessMessageMixin, FormView):
 
         extra = {'username': self.request.user.username}
 
-        worker_status = get_worker_status(self, extra)
+        worker_status, worker_count = get_worker_status(self, extra)
+
+        if worker_count == 0:
+            self.template_name = 'surveyfiles/errors_page.html'
+            context['errors'] = '<p>No any task worker is running !</p>' \
+                                '<p>Please contact GIS to check the status !</p>'
+
         if worker_status is not None:
             context['worker_status'] = worker_status
 
@@ -477,3 +506,20 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
             return super(CreatePPPFileAutomationView, self).dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
+
+    def get_context_data(self, **kwargs):
+        context = super(CreatePPPFileAutomationView, self).get_context_data(**kwargs)
+
+        extra = {'username': self.request.user.username}
+
+        worker_status, worker_count = get_worker_status(self, extra)
+
+        if worker_count == 0:
+            self.template_name = 'surveyfiles/errors_page.html'
+            context['errors'] = '<p>No any task worker is running !</p>' \
+                                '<p>Please contact GIS to check the status !</p>'
+
+        if worker_status is not None:
+            context['worker_status'] = worker_status
+
+        return context

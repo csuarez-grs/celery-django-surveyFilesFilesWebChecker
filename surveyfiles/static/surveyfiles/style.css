@@ -368,3 +368,11 @@ select {
     font-weight: bold;
     color: darkslateblue;
 }
+
+.errors-div {
+    text-align: center;
+    font-size: 50px;
+    font-weight: bolder;
+    color: darkred;
+    margin: 50px;
+}
