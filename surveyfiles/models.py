@@ -21,12 +21,12 @@ from multiselectfield import MultiSelectField
 from core.models import GRSJobInfo
 
 from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info, \
-    parse_surveyor_from_file_name, field_sketch_pdf_type
+    parse_surveyor_from_file_name, field_sketch_pdf_type, unit_report_type
 
 fortis_job_no_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
 
 exporting_types_options = [(item, item) for item in default_exporting_types]
-default_exporting_types_options = [c[0] for c in exporting_types_options]
+default_exporting_types_options = [unit_report_type, field_sketch_pdf_type]
 default_all_profiles_str = 'All Profiles'
 project_coordinates_choices = ((item, item) for item in project_coordinates_list)
 
