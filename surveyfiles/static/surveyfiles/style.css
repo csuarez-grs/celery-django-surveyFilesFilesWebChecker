@@ -332,17 +332,17 @@ select {
 }
 
 /* unvisited link */
-.cards-div a:link {
+.cards-div a:link, .alert-areas a:link {
     color: chartreuse;
 }
 
 /* visited link */
-.cards-div a:visited {
+.cards-div a:visited, .alert-areas a:visited {
     color: chartreuse;
 }
 
 /* mouse over link */
-.cards-div a:hover {
+.cards-div a:hover, .alert-areas a:hover {
     color: darkorange;
 }
 

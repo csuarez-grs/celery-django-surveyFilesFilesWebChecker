@@ -322,8 +322,12 @@ class DataExportView(SuccessMessageMixin, FormView):
     template_name = 'surveyfiles/data_export.html'
     form_class = DataExportForm
     success_message = "%(exporting_types)s will be created based on the data in %(site_db_path)s !" \
-                      " Please wait for result emails"
+                      " Please wait for result emails - %(log_path)s"
     success_url = reverse_lazy('surveyfiles:data_export_view')
+
+    def __init__(self, *args, **kwargs):
+        super(DataExportView, self).__init__(*args, **kwargs)
+        self.log_path = None
 
     def get_form_kwargs(self):
         kwargs = super(DataExportView, self).get_form_kwargs()
@@ -367,11 +371,12 @@ class DataExportView(SuccessMessageMixin, FormView):
 
         user = self.request.user
         user_name = user.username
+        self.log_path = os.path.join(fortis_web_automation.log_folder, 'DataExporting_{}_{}_{}.txt' \
+                                     .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         # print(job_no, user_id)
-        log_path = os.path.join(fortis_web_automation.log_folder, 'DataExporting_{}_{}_{}.txt' \
-                                .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
-        self.send_email(job_no, site_db_path, site_no, exporting_types, log_path)
-        args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, user_name, log_path, overwriting)
+
+        self.send_email(job_no, site_db_path, site_no, exporting_types, self.log_path)
+        args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, user_name, self.log_path, overwriting)
         data_export.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
@@ -389,6 +394,7 @@ class DataExportView(SuccessMessageMixin, FormView):
             cleaned_data,
             site_db_path=os.path.basename(site_db_path),
             exporting_types=','.join(exporting_types),
+            log_path=ma.hyperLinkFileBasename(self.log_path)
         )
 
     def get_context_data(self, **kwargs):
