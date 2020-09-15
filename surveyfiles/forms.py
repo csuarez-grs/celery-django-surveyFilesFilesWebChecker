@@ -15,7 +15,7 @@ from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_exporting_types_options, fortis_job_no_pattern, field_sketch_pdf_type
+    default_exporting_types_options, fortis_job_no_pattern, field_sketch_pdf_type,unit_report_type
 
 site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
 
@@ -186,6 +186,8 @@ class DataExportForm(forms.Form):
         cleaned_data = self.cleaned_data
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 
+        exporting_types_selected = self.cleaned_data.get('exporting_types_selected')
+
         source_jxl_path = self.cleaned_data.get('source_jxl_path')
         if source_jxl_path is not None and len(source_jxl_path.strip()) > 0:
             if not os.path.isfile(source_jxl_path) or source_jxl_path[-4:].lower() != '.jxl':
@@ -199,7 +201,9 @@ class DataExportForm(forms.Form):
                 )
         else:
             source_jxl_path = None
-            self.cleaned_data['source_jxl_path'] = source_jxl_path
+            self.cleaned_data['source_jxl_path'] = None
+            if unit_report_type in exporting_types_selected:
+                raise forms.ValidationError('Please type JXL file path for exporting unit report pdf.')
 
         site_db_path = self.cleaned_data.get('site_db_path')
         if site_db_path is not None:
