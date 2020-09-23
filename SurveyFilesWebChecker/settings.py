@@ -28,6 +28,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
+TRACKING_TABLE_NAME = config('TRACKING_TABLE')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -377,3 +378,4 @@ from decouple import config
 
 web_title = config('WEBTITLE')
 sub_working_folder = config('sub_working_folder')
+

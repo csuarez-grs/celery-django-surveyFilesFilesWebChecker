@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 
-from SurveyFilesWebChecker.settings import logger_model
+from SurveyFilesWebChecker.settings import logger_model, TRACKING_TABLE_NAME
 
 # Create your models here.
 from django.utils.html import format_html
@@ -320,7 +320,7 @@ class SurveyFileAutomation(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'SurveyFileAutomation'
+        db_table = TRACKING_TABLE_NAME
         ordering = ('-uploaded_time', 'job_no')
 
     def __unicode__(self):
