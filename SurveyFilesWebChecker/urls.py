@@ -28,7 +28,10 @@ urlpatterns = [
     # url(r'^accounts/signup/$', views.signup, name='signup'),
     url(r'^accounts/logout/$', auth_views.LogoutView.as_view(), name='logout'),
     # url(r'^accounts/', include('django.contrib.auth.urls')),
-    url('surveyfiles/', include('surveyfiles.urls', namespace='surveyfiles'))
+    url('surveyfiles/', include('surveyfiles.urls', namespace='surveyfiles')),
+    url(r'api-auth/', include('rest_framework.urls')),
+    url(r'rest-auth/', include('rest_auth.urls')),
+    url('surveyfiles/api/', include('surveyfiles.api.urls'))
 ]
 
 if settings.DEBUG:

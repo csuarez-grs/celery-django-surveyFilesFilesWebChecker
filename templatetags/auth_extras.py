@@ -26,8 +26,8 @@ def is_ppp_automation_group(user):
 
 @register.filter(name='get_file_name')
 def get_file_name(file_object):
-    if os.path.isfile(file_object.file.name):
-        return os.path.basename(file_object.file.name)
+    if file_object.name:
+        return os.path.basename(file_object.name)
     return None
 
 
@@ -44,6 +44,7 @@ def automation_type(target_field_folder):
         return 'PPP Automation'
     else:
         return 'JXL QC & Automation'
+
 
 @register.simple_tag
 def get_verbose_field_name(instance, field_name):

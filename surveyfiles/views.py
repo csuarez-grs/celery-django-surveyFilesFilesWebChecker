@@ -114,11 +114,6 @@ class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, L
 
     paginate_by = 10
 
-    def get_queryset(self):
-        valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
-                         if os.path.isfile(object.document.path)]
-        return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
-
 
 class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
     model = SurveyFileAutomation
@@ -127,10 +122,11 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
 
     paginate_by = 10
 
-    def get_queryset(self):
-        valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
-                         if os.path.isfile(object.document.path)]
-        return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
+    # Limit records for uploaded at the specific branch
+    # def get_queryset(self):
+    #     valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
+    #                      if os.path.isfile(object.document.path)]
+    #     return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
 
     def get_form_kwargs(self):
         kwargs = super(SurveyFilesCardsFilterView, self).get_form_kwargs()

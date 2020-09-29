@@ -317,6 +317,10 @@ class SurveyFileAutomation(models.Model):
                                             choices=(('Y', 'Yes'), ('N', 'No'), ('', 'Blank')))
     edited_time = models.DateTimeField(db_column='Edited Time', blank=True, null=True)
     edited_by = models.CharField(db_column='Edited By', max_length=50, blank=True, null=True)
+    total_profiles = models.IntegerField(db_column='TotalProfiles', null=True, blank=True)
+    total_profiles_meters = models.IntegerField(db_column='TotalProfilesMeters', null=True, blank=True)
+    total_points = models.IntegerField(db_column='TotalPoints', null=True, blank=True)
+    total_structures = models.IntegerField(db_column='TotalStructures', null=True, blank=True)
 
     class Meta:
         managed = True
@@ -325,6 +329,12 @@ class SurveyFileAutomation(models.Model):
 
     def __unicode__(self):
         return '{} - {} - {}'.format(self.uploaded_time, self.uploader, self.document.path)
+
+    @property
+    def document_name(self):
+        if self.document:
+            return os.path.basename(self.document.name)
+        return None
 
     @property
     def latest_log_time(self):

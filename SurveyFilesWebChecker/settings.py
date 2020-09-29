@@ -52,10 +52,40 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_tables2',
     'django_filters',
+    'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',
     'users',
     'surveyfiles',
     'core'
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # 'rest_framework.permissions.IsAuthenticated'
+    # 'rest_framework.permissions.AllowAny',
+    # ],
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework.renderers.JSONRenderer',
+    # ),
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     'rest_framework.parsers.JSONParser',
+    # ),
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+
+    'COERCE_DECIMAL_TO_STRING': True,
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'surveyfiles.api.pagination.APIPagination',
+    'PAGE_SIZE': 100
+}
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODEL = 'users.LDAPUser'
 
@@ -135,6 +165,7 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -378,4 +409,3 @@ from decouple import config
 
 web_title = config('WEBTITLE')
 sub_working_folder = config('sub_working_folder')
-
