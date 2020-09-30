@@ -348,7 +348,8 @@ class PPPFileAutomationForm(forms.ModelForm):
 
 class JobSetUpForm(forms.Form):
     job_no = forms.CharField(label='Fortis Job No', max_length=8)
-    selected_sites = forms.CharField(label='Selected Sites (separated by ",")', max_length=50, required=False)
+    selected_sites = forms.CharField(label='Selected Sites (separated by ",") or leave blank for all sites'
+                                           ' retrieved from database', max_length=50, required=False)
     background_imagery = forms.ChoiceField(label='Background Imagery',
                                            choices=((item, item.split('\\')[1])
                                                     for item in field_sketch_pdf.IMAGERY_CHOICES),
@@ -368,5 +369,5 @@ class JobSetUpForm(forms.Form):
         if not re.match(fortis_job_no_pattern, job_no):
             raise forms.ValidationError('{} is not Fortis job pattern !!!'.format(job_no))
 
-        if selected_sites and any([not re.match('\d+', item) for item in selected_sites]):
+        if selected_sites and any([not re.match('^\d+$', item) for item in selected_sites]):
             raise forms.ValidationError('Selected sites only allow integer separated by ","')
