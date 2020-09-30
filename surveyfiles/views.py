@@ -29,8 +29,12 @@ class JobSetUpView(SuccessMessageMixin, FormView):
     template_name = 'surveyfiles/job_setup.html'
     form_class = JobSetUpForm
     success_message = "%(job_no)s sketch pdf setup is submitted successfully !" \
-                      " Please wait for result emails"
+                      " Please wait for result emails - %(log_path)s"
     success_url = reverse_lazy('surveyfiles:sketch_pdf_setup_view')
+
+    def __init__(self, *args, **kwargs):
+        super(JobSetUpView, self).__init__(*args, **kwargs)
+        self.log_path = None
 
     def send_email(self, job_no, log_path):
         recipient_list = ['gis@globalraymac.ca']
@@ -63,10 +67,10 @@ class JobSetUpView(SuccessMessageMixin, FormView):
         user = self.request.user
         user_name = user.username
         # print(job_no, user_id)
-        log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
+        self.log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
                                 .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
-        self.send_email(job_no, log_path)
-        args = (job_no, selected_sites, background_imagery, user_name, log_path)
+        self.send_email(job_no, self.log_path)
+        args = (job_no, selected_sites, background_imagery, user_name, self.log_path)
         job_sketch_setup.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
@@ -86,6 +90,7 @@ class JobSetUpView(SuccessMessageMixin, FormView):
 
         return self.success_message % dict(
             job_no=job_no,
+            log_path=ma.hyperLinkFileBasename(self.log_path)
         )
 
     def get_context_data(self, **kwargs):
