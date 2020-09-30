@@ -15,7 +15,8 @@ from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_exporting_types_options, fortis_job_no_pattern, field_sketch_pdf_type,unit_report_type
+    default_exporting_types_options, fortis_job_no_pattern, field_sketch_pdf_type, unit_report_type
+import field_sketch_pdf
 
 site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
 
@@ -175,6 +176,11 @@ class DataExportForm(forms.Form):
                                                          initial=tuple(default_exporting_types_options),
                                                          widget=forms.widgets.CheckboxSelectMultiple,
                                                          required=False)
+
+    background_imagery = forms.ChoiceField(label='Background Imagery',
+                                           choices=((item, item.split('\\')[1])
+                                                    for item in field_sketch_pdf.IMAGERY_CHOICES),
+                                           initial=field_sketch_pdf.VALTUS_IMAGERY)
 
     overwriting = forms.BooleanField(label='Overwriting', initial=False, required=False)
 
@@ -342,6 +348,11 @@ class PPPFileAutomationForm(forms.ModelForm):
 
 class JobSetUpForm(forms.Form):
     job_no = forms.CharField(label='Fortis Job No', max_length=8)
+    selected_sites = forms.CharField(label='Selected Sites (separated by ",")', max_length=50, required=False)
+    background_imagery = forms.ChoiceField(label='Background Imagery',
+                                           choices=((item, item.split('\\')[1])
+                                                    for item in field_sketch_pdf.IMAGERY_CHOICES),
+                                           initial=field_sketch_pdf.VALTUS_IMAGERY)
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
@@ -351,6 +362,11 @@ class JobSetUpForm(forms.Form):
         cleaned_data = self.cleaned_data
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         job_no = str(cleaned_data['job_no']).strip()
+        selected_sites = [item.strip() for item in str(cleaned_data['selected_sites']).strip().split(',')
+                          if len(item.strip()) > 0]
 
         if not re.match(fortis_job_no_pattern, job_no):
             raise forms.ValidationError('{} is not Fortis job pattern !!!'.format(job_no))
+
+        if selected_sites and any([not re.match('\d+', item) for item in selected_sites]):
+            raise forms.ValidationError('Selected sites only allow integer separated by ","')

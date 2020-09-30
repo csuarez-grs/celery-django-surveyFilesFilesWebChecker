@@ -42,16 +42,19 @@ from SurveyFilesWebChecker.settings import logger_request
 #         print('Errors: {}'.format(str(e)))
 
 @celery_app.task()
-def job_sketch_setup(job_no, user_name, log_path):
+def job_sketch_setup(job_no, selected_sites, background_imagery, user_name, log_path):
     job_folder = ma.get_latitude_job_folder(job_no)
     if os.path.isdir(job_folder):
-        js = field_sketch_pdf.JobSetUpFieldSketchPDF(job_no=job_no, job_folder=job_folder, user=user_name,
+        js = field_sketch_pdf.JobSetUpFieldSketchPDF(job_no=job_no, selected_sites=selected_sites,
+                                                     background_imagery=background_imagery,
+                                                     job_folder=job_folder, user=user_name,
                                                      overwriting=False, logger_objs=[None, log_path])
         js.make_pdf()
 
 
 @celery_app.task()
-def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, user_name, log_path, overwriting):
+def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, background_imagery
+                , user_name, log_path, overwriting):
     w = fortis_web_automation.FortisJXLWebAutomationWorker(
         job_no=job_no, site_no=site_no,
         uploader=user_name,
@@ -61,6 +64,7 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, u
         use_temporary_job_folder=True,
         overwriting=overwriting,
         logger_objs=[None, log_path],
+        background_imagery=background_imagery
     )
 
     w.compile_data_path()

@@ -55,13 +55,18 @@ class JobSetUpView(SuccessMessageMixin, FormView):
 
     def form_valid(self, form):
         job_no = str(form.cleaned_data.get('job_no')).upper()
+        background_imagery = form.cleaned_data.get('background_imagery')
+        selected_sites = [item.strip() for item in str(form.cleaned_data['selected_sites']).strip().split(',')
+                          if len(item.strip()) > 0]
+        if selected_sites:
+            selected_sites = [int(item) for item in selected_sites]
         user = self.request.user
         user_name = user.username
         # print(job_no, user_id)
         log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
                                 .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         self.send_email(job_no, log_path)
-        args = (job_no, user_name, log_path)
+        args = (job_no, selected_sites, background_imagery, user_name, log_path)
         job_sketch_setup.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
@@ -357,6 +362,7 @@ class DataExportView(SuccessMessageMixin, FormView):
         exporting_types_selected = form.cleaned_data.get('exporting_types_selected')
         exporting_types = [item.strip() for item in exporting_types_selected
                            if len(item.strip()) > 0]
+        background_imagery = form.cleaned_data.get('background_imagery')
         overwriting = form.cleaned_data.get('overwriting')
         # overwriting = False
         job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
@@ -372,7 +378,8 @@ class DataExportView(SuccessMessageMixin, FormView):
         # print(job_no, user_id)
 
         self.send_email(job_no, site_db_path, site_no, exporting_types, self.log_path)
-        args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, user_name, self.log_path, overwriting)
+        args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, background_imagery
+                , user_name, self.log_path, overwriting)
         data_export.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
