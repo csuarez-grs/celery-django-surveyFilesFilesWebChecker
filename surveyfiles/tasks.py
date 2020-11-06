@@ -129,9 +129,9 @@ def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, cre
 
 @celery_app.task()
 def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_value, utm_sr_name, project_manager_name,
-                        project_manager_email, surveyor_name, surveyor_email,
+                        project_manager_email, surveyor_name, surveyor_email, site_data_db,
                         target_field_folder, tracking_id, overwriting, uploader_name, uploader_email):
-    # type: (str, int, str, list, float, str, str, str, str, str, str, str, bool, str, str) -> None
+    # type: (str, int, str, list, float, str, str, str, str, str, str,str, str, bool, str, str) -> None
     grs_job = gbc.GRSJob(job_no=job_no)
 
     jxl_file = gbc.JXLFile(jxl_path=uploaded_file, scale_value=scale_value, utm_name=utm_sr_name)
@@ -154,8 +154,16 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
         pm=pm,
         surveyor=surveyor)
 
+    if site_data_db:
+        create_gis_data = False
+    else:
+        create_gis_data = True
+
     ppp_automation_worker = ppp_automation.PPPAutomationWorker(grs_job=grs_job, site_no=site_no,
-                                                               ppp_jxl=jxl_file, field_folder=field_folder,
+                                                               ppp_jxl=jxl_file,
+                                                               site_db_path=site_data_db,
+                                                               create_gis_data=create_gis_data,
+                                                               field_folder=field_folder,
                                                                uploading_info=uploading_info,
                                                                uploader=executor,
                                                                web_track_id=tracking_id,

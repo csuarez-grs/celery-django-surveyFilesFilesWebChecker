@@ -68,7 +68,7 @@ class JobSetUpView(SuccessMessageMixin, FormView):
         user_name = user.username
         # print(job_no, user_id)
         self.log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
-                                .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
+                                     .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         self.send_email(job_no, self.log_path)
         args = (job_no, selected_sites, background_imagery, user_name, self.log_path)
         job_sketch_setup.si(*args) \
@@ -473,14 +473,14 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
         project_manager_email = self.object.project_manager_email
         surveyor_name = self.object.surveyor_name
         surveyor_email = self.object.surveyor_email
+        site_data_db = self.object.site_data_db
         target_field_folder = self.object.target_field_folder
 
-        args = (uploader_usernane, job_no, document_name, uploaded_time_str, target_field_folder)
+        args = (uploader_usernane, job_no, document_name, uploaded_time_str, site_data_db, target_field_folder)
         notify_uploading.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
         tracking_id = self.object.tracking_id
-        target_field_folder = self.object.target_field_folder
 
         if self.object.overwriting == 1:
             overwriting = True
@@ -500,7 +500,7 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
         ]
 
         args = (job_no, site_no, uploaded_file, uploading_info, scale_value, utm_sr_name, project_manager_name,
-                project_manager_email, surveyor_name, surveyor_email,
+                project_manager_email, surveyor_name, surveyor_email, site_data_db,
                 target_field_folder, tracking_id, overwriting, self.object.uploader_name, self.object.uploader_email)
 
         ppp_automation_task_func = ppp_automation_task.si(*args).set(queue=task_queue)

@@ -252,7 +252,7 @@ class PPPFileAutomationForm(forms.ModelForm):
     class Meta:
         model = SurveyFileAutomation
         fields = ['document', 'site_no', 'extract_input_values', 'utm_sr_name', 'scale_value',
-                  'target_field_folder',
+                  'target_field_folder', 'site_data_db',
                   'overwriting']
 
     def __init__(self, *args, **kwargs):
@@ -260,6 +260,7 @@ class PPPFileAutomationForm(forms.ModelForm):
         super(PPPFileAutomationForm, self).__init__(*args, **kwargs)
         self.fields['utm_sr_name'].required = False
         self.fields['scale_value'].required = True
+        self.fields['site_data_db'].required = False
         self.fields['target_field_folder'].required = True
         self.fields['overwriting'].required = False
         self.fields['overwriting'].initial = False
@@ -270,7 +271,8 @@ class PPPFileAutomationForm(forms.ModelForm):
         cleaned_data = self.cleaned_data
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         document_name = str(cleaned_data['document'])
-
+        site_data_db = self.cleaned_data.get('site_data_db')
+        target_field_folder = self.cleaned_data.get('target_field_folder')
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
@@ -289,7 +291,6 @@ class PPPFileAutomationForm(forms.ModelForm):
                     _('Please manually select UTM from dropdown list and type scale value !!!')
                 )
 
-        target_field_folder = self.cleaned_data.get('target_field_folder')
         if target_field_folder is not None:
             target_field_folder = target_field_folder.replace('R:', r'\\grs.com\DFS\JOBS')
             self.cleaned_data['target_field_folder'] = target_field_folder
@@ -299,16 +300,14 @@ class PPPFileAutomationForm(forms.ModelForm):
                             extra={'username': self.user.username})
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 
-        if re.search('\.jxl$', document_name) and re.search(fortis_job_no_pattern, document_name):
-            jxl_job_no = re.search(fortis_job_no_pattern, document_name).groups()[0]
-            if re.search(fortis_job_no_pattern, os.path.basename(target_field_folder)):
-                field_folder_job = re.search(fortis_job_no_pattern, os.path.basename(target_field_folder)).groups()[0]
-                if jxl_job_no.upper() != field_folder_job.upper():
+        document_job_no = re.search(fortis_job_no_pattern, document_name).groups()[0]
+        for item in [target_field_folder, site_data_db]:
+            if item and re.search(fortis_job_no_pattern, os.path.basename(item)):
+                item_job_no = re.search(fortis_job_no_pattern, os.path.basename(item)).groups()[0]
+                if document_job_no.upper() != item_job_no.upper():
                     raise forms.ValidationError(
-                        _('Target field folder: %(target_field_folder)s, has job no %(field_folder_job)s'
-                          ' (Different from %(jxl_job_no)s) in jxl file !!!'),
-                        params={'target_field_folder': os.path.basename(target_field_folder),
-                                'field_folder_job': field_folder_job, 'jxl_job_no': jxl_job_no}
+                        '{} has job no {} (Different from {}) in document file !!!'
+                            .format(item, item_job_no, document_job_no)
                     )
 
         logger_request.info('cleaning is done', extra={'username': self.user.username})
