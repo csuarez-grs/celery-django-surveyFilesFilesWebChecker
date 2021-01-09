@@ -164,6 +164,14 @@ class SurveyFileAutomationForm(forms.ModelForm):
         return new_jxl_obj
 
 
+def validate_emails(text):
+    items = [str(item).strip() for item in re.split('[,;\s]+', text) if len(str(item).strip()) > 0]
+    email_pattern = re.compile('^[a-zA-Z0-9]+@[a-zA-Z0-9\.]+$')
+    any_errors = [item for item in items if not re.match(email_pattern, item)]
+    if any_errors:
+        raise forms.ValidationError('{} is not valid emails!'.format(', '.join(any_errors)))
+
+
 class DataExportForm(forms.Form):
     site_db_path = forms.CharField(label='Site GeoDatabase Path', max_length=500)
     site_no = forms.IntegerField(label='Site No (In case all sites data are created in the above single geodatabase !)',
@@ -183,6 +191,8 @@ class DataExportForm(forms.Form):
                                            initial=field_sketch_pdf.VALTUS_IMAGERY)
 
     overwriting = forms.BooleanField(label='Overwriting', initial=False, required=False)
+    contact_emails = forms.CharField(label='Contact Emails (Separated by "," or ";")', required=False, max_length=255,
+                                     validators=[validate_emails])
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')

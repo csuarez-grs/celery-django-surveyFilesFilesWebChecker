@@ -54,7 +54,7 @@ def job_sketch_setup(job_no, selected_sites, background_imagery, user_name, log_
 
 @celery_app.task()
 def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, background_imagery
-                , user_name, log_path, overwriting):
+                , user_name, log_path, overwriting, contact_emails):
     w = fortis_web_automation.FortisJXLWebAutomationWorker(
         job_no=job_no, site_no=site_no,
         uploader=user_name,
@@ -64,7 +64,8 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
         use_temporary_job_folder=True,
         overwriting=overwriting,
         logger_objs=[None, log_path],
-        background_imagery=background_imagery
+        background_imagery=background_imagery,
+        automation_cc_emails=contact_emails
     )
 
     w.compile_data_path()

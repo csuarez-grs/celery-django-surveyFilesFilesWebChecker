@@ -340,21 +340,25 @@ class DataExportView(SuccessMessageMixin, FormView):
         kwargs.update({'user': self.request.user})
         return kwargs
 
-    def send_email(self, job_no, site_db_path, site_no, exporting_types, log_path):
+    def send_email(self, job_no, site_db_path, site_no, exporting_types, log_path, contact_emails):
         recipient_list = ['gis@globalraymac.ca']
         if self.request.user is not None:
             recipient_list.append(self.request.user.email)
 
-        subject = '{} job data exporting is requested'.format(job_no)
+        if contact_emails:
+            recipient_list.extend(contact_emails)
+
+        subject = '{} job data exporting is requested by {}'.format(job_no, self.request.user)
         if sub_working_folder == 'Dev':
             subject += ' ({})'.format(sub_working_folder)
 
         send_mail(
             subject=subject,
-            message='{} will be created based on data in geodatabase as below for job {} site {}.'
-                    '\n{}\n\nChecking log:\n{}\n\n'.format(','.join(exporting_types),
+            message='As requested by {}, {} will be created based on data in geodatabase as below for job {} site {}.'
+                    '\n{}\n\nChecking log:\n{}\n\n'.format(self.request.user,
+                                                           ','.join(exporting_types),
                                                            job_no, site_no,
-                                                           ma.hyperLinkFileFullName(site_db_path),
+                                                           site_db_path,
                                                            log_path),
             from_email=EMAIL_HOST_USER,
             recipient_list=recipient_list
@@ -369,6 +373,8 @@ class DataExportView(SuccessMessageMixin, FormView):
                            if len(item.strip()) > 0]
         background_imagery = form.cleaned_data.get('background_imagery')
         overwriting = form.cleaned_data.get('overwriting')
+        contact_emails = [str(item).strip() for item in re.split('[,;\s]+', form.cleaned_data.get('contact_emails'))
+                          if len(str(item).strip()) > 0]
         # overwriting = False
         job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
 
@@ -382,9 +388,9 @@ class DataExportView(SuccessMessageMixin, FormView):
                                      .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         # print(job_no, user_id)
 
-        self.send_email(job_no, site_db_path, site_no, exporting_types, self.log_path)
+        self.send_email(job_no, site_db_path, site_no, exporting_types, self.log_path, contact_emails)
         args = (job_no, site_no, site_db_path, source_jxl_path, exporting_types, background_imagery
-                , user_name, self.log_path, overwriting)
+                , user_name, self.log_path, overwriting, contact_emails)
         data_export.si(*args) \
             .set(queue=task_queue) \
             .apply_async()
