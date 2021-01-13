@@ -59,6 +59,8 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
         job_no=job_no, site_no=site_no,
         uploader=user_name,
         uploaded_file=uploaded_file,
+        create_gis_data=False,
+        create_reports=True,
         site_db_path=site_db_path,
         exporting_types=exporting_types,
         use_temporary_job_folder=True,
@@ -68,9 +70,10 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
         automation_cc_emails=contact_emails
     )
 
-    w.compile_data_path()
-    w.make_outputs()
-    w.sending_automatic_results_email()
+    w.automatic_processing()
+    # w.compile_data_path()
+    # w.make_outputs()
+    # w.sending_automatic_results_email()
 
 
 @celery_app.task()
