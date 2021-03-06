@@ -177,7 +177,7 @@ def get_obj_time_ago(obj_time):
 
 
 def get_target_url(target_path, name=None):
-    if target_path is not None and re.search(r'grs\.com', target_path, re.IGNORECASE):
+    if target_path is not None:
         if os.path.isdir(target_path) or os.path.isfile(target_path):
             target_url = 'file://{}'.format(target_path[2:])
             if name is None:
