@@ -234,6 +234,20 @@ DATABASES = {
         },
     },
 
+    'fortis': {
+        'ENGINE': 'sql_server.pyodbc',
+        'NAME': config('GRSFortis_DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': '',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 13 for SQL Server',
+            # 'driver': 'SQL Server Native Client 11.0',
+            'MARS_Connection': 'True',
+        },
+    },
+
     'latidatasql': {
         'ENGINE': 'sql_server.pyodbc',
         'NAME': config('LATITUDE_DB_NAME'),

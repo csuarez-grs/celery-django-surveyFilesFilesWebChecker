@@ -51,6 +51,8 @@ class CoreRouter:
         if model._meta.app_label == 'core':
             if model._meta.db_table in ['vwGRSJobs', 'vwGRSLegalDescJob', 'vwEmployee', 'tblJobs']:
                 return 'latidatasql'
+            elif model._meta.db_table in ['vi_FortisFieldPageExtents']:
+                return 'fortis'
             else:
                 return None
 
@@ -67,7 +69,7 @@ class CoreRouter:
         Make sure the auth app only appears in the 'auth_db'
         database.
         """
-        if db == 'latidatasql':
+        if db in ('latidatasql', 'fortis'):
             return False
         return None
 

@@ -394,3 +394,18 @@ class ScriptStatus(models.Model):
         super(ScriptStatus, self).save(*args, **kwargs)
 
 
+class FortisJobExtents(models.Model):
+    _DATABASE = 'fortis'
+
+    object_id = models.IntegerField(db_column='OBJECTID', primary_key=True)
+    job_no = models.CharField(db_column='Job_Number', max_length=8)
+    site_id = models.IntegerField(db_column='SiteID')
+
+    class Meta:
+        managed = False
+        db_table = 'vi_FortisFieldPageExtents'
+
+    @classmethod
+    def get_sites(cls, job_no):
+        return sorted(list(set([item.site_id for item in cls.objects.filter(job_no=job_no)])))
+
