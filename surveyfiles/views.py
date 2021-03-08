@@ -67,7 +67,7 @@ class JobSetUpView(SuccessMessageMixin, FormView):
         user = self.request.user
         user_name = user.username
         # print(job_no, user_id)
-        self.log_path = os.path.join(fortis_web_automation.log_folder, 'JobSketchSetUp_{}_{}_{}.txt' \
+        self.log_path = os.path.join(fortis_web_automation.WEB_LOG_FOLDER, 'JobSketchSetUp_{}_{}_{}.txt' \
                                      .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         self.send_email(job_no, self.log_path)
         args = (job_no, selected_sites, background_imagery, user_name, self.log_path)
@@ -384,7 +384,7 @@ class DataExportView(SuccessMessageMixin, FormView):
 
         user = self.request.user
         user_name = user.username
-        self.log_path = os.path.join(fortis_web_automation.log_folder, 'DataExporting_{}_{}_{}.txt' \
+        self.log_path = os.path.join(fortis_web_automation.WEB_LOG_FOLDER, 'DataExporting_{}_{}_{}.txt' \
                                      .format(job_no, user_name, time.strftime('%Y%m%d_%H%M%S')))
         # print(job_no, user_id)
 
