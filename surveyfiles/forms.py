@@ -54,28 +54,36 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+        # logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
         document_name = str(cleaned_data['document'])
-        logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
+        # logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
+        create_gis_data = bool(cleaned_data['create_gis_data'])
+        exporting_types_selected = cleaned_data['exporting_types_selected']
         # print(document_name, type(document_name),
         #     extract_input_values, type(extract_input_values),
         #       utm_sr_name, type(utm_sr_name),
         #       scale_value, type(scale_value))
 
-        logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+        # logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
+
+        if not create_gis_data and exporting_types_selected:
+            self.add_error('create_gis_data', 'Please select "create_gis_data" if exporting any data files !')
+        else:
+            if self.has_error('create_gis_data'):
+                del self._errors['create_gis_data']
 
         if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
                 or document_name[-4:].lower() == '.csv':
-            logger_request.info('Checking if UTM and scale are entered.', extra={'username': self.user.username})
+            # logger_request.info('Checking if UTM and scale are entered.', extra={'username': self.user.username})
             if utm_sr_name is None:
                 self.add_error('utm_sr_name', 'Please select UTM name')
             if scale_value is None:
                 self.add_error('scale_value', 'Please type scale factor')
 
-        logger_request.info('cleaning is done', extra={'username': self.user.username})
+        logger_request.info('cleaning is done:\n{}'.format(cleaned_data), extra={'username': self.user.username})
 
         return cleaned_data
 
