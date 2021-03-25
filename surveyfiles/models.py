@@ -305,6 +305,7 @@ class SurveyFileAutomation(models.Model):
     wgs84_csv = models.TextField(db_column='WGS84 CSV', blank=True, null=True)
     kmz_path = models.TextField(db_column='KMZ Path', blank=True, null=True)
     unit_report_path = models.TextField(db_column='Unit Report', blank=True, null=True)
+    field_sketch_pdf_path = models.TextField(db_column='Field Sketch PDF', blank=True, null=True)
     errors = models.CharField(db_column='Errors', max_length=500, blank=True, null=True)
     target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
                                            validators=[validate_target_field_folder],
