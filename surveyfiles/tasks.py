@@ -77,26 +77,37 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
 
 
 @celery_app.task()
-def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_field_folder):
+def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_field_folder,
+                     utm_sr_name, scale_factor, exporting_types, site_data_db=None):
     try:
         # lookup user by id and send them a message
         gis_email = 'gis@globalraymac.ca'
         user = User.objects.get(username=username)
         user_email = user.email
         user_name = user.username
-        logger_request.info('Sending uploading confirmation email to {}'.format(user_name, uploaded_file))
+        # logger_request.info('Sending uploading confirmation email to {}'.format(user_name, uploaded_file))
         msg_subject = '{}: JXL Files Uploading Web Notice'.format(job_no)
+        msg_content = '<p>Uploader: {}<br>Time: {}<br>' \
+            .format(user_name, uploaded_time_str)
+
         if target_field_folder is not None:
             msg_subject += ' (PPP Automation)'
-            msg_content = '<p>Uploader: {}<br>File: {}<br>Target Field Folder: {}<br>Time: {}</p><br>' \
-                .format(user_name, uploaded_file, target_field_folder, uploaded_time_str)
-        else:
+            msg_content += 'File: {}<br>Target Field Folder: {}'.format(uploaded_file, target_field_folder)
+        elif uploaded_file:
             msg_subject += ' (Validation)'
-            msg_content = '<p>Uploader: {}<br>File: {}<br>Time: {}</p><br>' \
-                .format(user_name, uploaded_file, uploaded_time_str)
+            msg_content += 'File: {}'.format(uploaded_file)
+        elif site_data_db:
+            msg_subject += ' (Export)'
+            msg_content += 'Exporting from Site Data db: {}'.format(site_data_db)
+
+        msg_content += '<br>UTM: {}<br>Scale Factor: {}'.format(utm_sr_name, scale_factor)
+        if exporting_types:
+            msg_content += '<br>Exporting Types: {}'.format(', '.join(exporting_types))
 
         if sub_working_folder == 'Dev':
             msg_subject += ' ({})'.format(sub_working_folder)
+
+        msg_content += '</p><br>'
 
         html_content = msg_content
 
@@ -114,21 +125,38 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
 
 @celery_app.task()
 def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, create_gis_data,
+                      site_data_db, utm_sr_name, scale_value,
                       create_client_report,
                       exporting_types, overwriting, uploading_info):
-    logger_request.info('QC Check {}'.format(uploaded_file))
-    qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
-                                                                   uploaded_file=uploaded_file, uploader=uploader,
-                                                                   tracking_id=tracking_id,
-                                                                   logger_name='QC',
-                                                                   uploading_info=uploading_info)
+    if not site_data_db:
+        logger_request.info('QC Check {}'.format(uploaded_file))
+        qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
+                                                                       uploaded_file=uploaded_file, uploader=uploader,
+                                                                       tracking_id=tracking_id,
+                                                                       logger_name='QC',
+                                                                       uploading_info=uploading_info)
 
-    qc_worker.qc_check()
+        qc_worker.qc_check()
+        qc_success = qc_worker.qc_results == 'Succeeded'
+    else:
+        qc_success = True
 
-    if qc_worker.qc_results == 'Succeeded' and (create_gis_data or create_client_report):
-        run_automation_jxl(job_no, site_no, uploaded_file, uploader, tracking_id,
-                           create_gis_data, create_client_report, exporting_types,
-                           overwriting, uploading_info=uploading_info)
+    if qc_success and (create_gis_data or site_data_db or create_client_report):
+        logger_request.info('Running automation for {}'.format(uploaded_file))
+
+        worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
+                                                                    uploaded_file=uploaded_file, uploader=uploader,
+                                                                    tracking_id=tracking_id,
+                                                                    create_gis_data=create_gis_data,
+                                                                    site_db_path=site_data_db,
+                                                                    scale_factor_value=scale_value,
+                                                                    utm_sr_name=utm_sr_name,
+                                                                    create_reports=create_client_report,
+                                                                    exporting_types=exporting_types,
+                                                                    overwriting=overwriting,
+                                                                    uploading_info=uploading_info)
+
+        worker.automatic_processing()
 
 
 @celery_app.task()
@@ -177,19 +205,18 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
 
     ppp_automation_worker.run()
 
-
-def run_automation_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, create_gis_data,
-                       create_client_report,
-                       exporting_types, overwriting, uploading_info):
-    logger_request.info('Running automation for {}'.format(uploaded_file))
-
-    worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
-                                                                uploaded_file=uploaded_file, uploader=uploader,
-                                                                tracking_id=tracking_id,
-                                                                create_gis_data=create_gis_data,
-                                                                create_reports=create_client_report,
-                                                                exporting_types=exporting_types,
-                                                                overwriting=overwriting,
-                                                                uploading_info=uploading_info)
-
-    worker.automatic_processing()
+# def run_automation_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, create_gis_data,
+#                        create_client_report,
+#                        exporting_types, overwriting, uploading_info):
+#     logger_request.info('Running automation for {}'.format(uploaded_file))
+#
+#     worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
+#                                                                 uploaded_file=uploaded_file, uploader=uploader,
+#                                                                 tracking_id=tracking_id,
+#                                                                 create_gis_data=create_gis_data,
+#                                                                 create_reports=create_client_report,
+#                                                                 exporting_types=exporting_types,
+#                                                                 overwriting=overwriting,
+#                                                                 uploading_info=uploading_info)
+#
+#     worker.automatic_processing()

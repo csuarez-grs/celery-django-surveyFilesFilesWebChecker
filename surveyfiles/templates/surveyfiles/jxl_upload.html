@@ -27,6 +27,11 @@
                         </div>
                     {% endif %}
 
+                {% if reference_object %}
+                    <div class="details-success">Exporting data files from {{ reference_object.site_data_db }}
+                        ({{ reference_object.utm_sr_name }}|{{ reference_object.scale_value }})</div>
+                {% endif %}
+
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form|crispy }}

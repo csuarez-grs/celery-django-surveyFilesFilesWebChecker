@@ -331,24 +331,25 @@ select {
     color: whitesmoke;
 }
 
-/* unvisited link */
-.cards-div a:link, .alert-areas a:link {
-    color: chartreuse;
-}
-
-/* visited link */
-.cards-div a:visited, .alert-areas a:visited {
-    color: chartreuse;
-}
-
-/* mouse over link */
-.cards-div a:hover, .alert-areas a:hover {
-    color: darkorange;
-}
 
 .card-body {
     padding: 0.3em 0.5em;
     font-size: 14px;
+}
+
+/* unvisited link */
+.card-body a:link, .alert-areas a:link {
+    color: chartreuse;
+}
+
+/* visited link */
+.card-body a:visited, .alert-areas a:visited {
+    color: chartreuse;
+}
+
+/* mouse over link */
+.card-body a:hover, .alert-areas a:hover {
+    color: chartreuse;
 }
 
 .card-header {
@@ -359,6 +360,11 @@ select {
     padding: 0.3em;
 }
 
+.card-header a, a:hover, a:focus, a:active {
+    color: inherit;
+    text-decoration: none;
+}
+
 .page-title {
     font-weight: bold;
     color: darkslateblue;
@@ -367,6 +373,8 @@ select {
 .small-button {
     font-weight: bold;
     color: darkslateblue;
+    width: fit-content;
+    padding: 5px;
 }
 
 .errors-div {

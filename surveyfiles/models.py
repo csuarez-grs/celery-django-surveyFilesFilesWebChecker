@@ -23,7 +23,8 @@ from core.models import GRSJobInfo
 from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info, \
     parse_surveyor_from_file_name, field_sketch_pdf_type, unit_report_type
 
-fortis_job_no_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
+FORTIS_JOB_NO_PATTERN = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})', re.IGNORECASE)
+LINE_TIME_STR_PATTERN = re.compile('^\d{4}-(\d{2}-\d{2}\s\d{2}:\d{2}):\d{2}\s')
 
 exporting_types_options = [(item, item) for item in default_exporting_types]
 default_exporting_types_options = [unit_report_type, field_sketch_pdf_type]
@@ -45,7 +46,7 @@ def validate_site_data_db(site_data_db):
             _('%(site_data_db)s is empty folder !!!'),
             params={'site_data_db': site_data_db}
         )
-    elif not re.search(fortis_job_no_pattern, os.path.basename(site_data_db)):
+    elif not re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(site_data_db)):
         raise ValidationError(
             _('%(site_data_db)s has no valid fortis job no !!!'),
             params={'site_data_db': os.path.basename(site_data_db)}
@@ -63,7 +64,7 @@ def validate_target_field_folder(target_field_folder):
             _('%(target_field_folder)s is empty folder !!!'),
             params={'target_field_folder': target_field_folder}
         )
-    elif not re.search(fortis_job_no_pattern, os.path.basename(target_field_folder)):
+    elif not re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(target_field_folder)):
         raise ValidationError(
             _('%(target_field_folder)s has no valid fortis job no !!!'),
             params={'target_field_folder': os.path.basename(target_field_folder)}
@@ -117,14 +118,14 @@ def validate_jxl_pattern(document):
         )
 
     # jxl_name_pattern = re.compile('(?P<job_no>\d{2}[CEM]F\d{4})\-S(?P<site_no>\d+)[\_\-\.]', re.IGNORECASE)
-    if not re.search(fortis_job_no_pattern, document_name):
+    if not re.search(FORTIS_JOB_NO_PATTERN, document_name):
         raise ValidationError(
             # _('%(file_name)s: Please include valid job no and site no like "19CF0001-S1" in your file name'),
             _('%(file_name)s: Please include valid job no like "19CF0001" in your file name'),
             params={'file_name': document_name},
         )
     else:
-        group_matched = list(re.finditer(fortis_job_no_pattern, document_name))[0]
+        group_matched = list(re.finditer(FORTIS_JOB_NO_PATTERN, document_name))[0]
         groups_dict = group_matched.groupdict()
         logger_model.info('{}'.format(groups_dict))
 
@@ -240,7 +241,7 @@ class SurveyFileAutomation(models.Model):
     description = models.CharField(verbose_name='Description', max_length=500, blank=True, null=True)
     document = models.FileField(upload_to=get_upload_path,
                                 verbose_name='Document',
-                                blank=False, null=False,
+                                blank=True, null=True,
                                 validators=[validate_jxl_pattern],
                                 storage=OverwriteStorage())
     site_no = MinMaxInteger(db_column='Site No', blank=False, null=False, min_value=1)
@@ -339,21 +340,32 @@ class SurveyFileAutomation(models.Model):
     @property
     def latest_log_time(self):
         if self.log_path is not None and os.path.isfile(self.log_path):
-            line_time_str_pattern = re.compile('^\d{4}-(\d{2}-\d{2}\s\d{2}:\d{2}):\d{2}\s')
             try:
-                with open(self.log_path) as reader:
-                    lines = reader.readlines()
-                    lines_with_time = [line for line in lines if re.match(line_time_str_pattern, line)]
-                    if len(lines_with_time) == 0:
-                        return None
-                    last_line = lines_with_time[-1]
-                    last_time = re.search(line_time_str_pattern, last_line).groups()[0]
-                    return datetime.datetime.strptime(last_time, '%m-%d %H:%M').strftime('%H:%M on %b %d')
+                last_line = self.read_log_lines()[0]
+                last_time = re.search(LINE_TIME_STR_PATTERN, last_line).groups()[0]
+                return datetime.datetime.strptime(last_time, '%m-%d %H:%M').strftime('%H:%M on %b %d')
             except Exception as e:
                 logger_model.exception(e)
                 return None
         else:
             return None
+
+    def read_log_lines(self, lines_num=None):
+        with open(self.log_path) as reader:
+            lines = reader.readlines()
+            lines_with_time = [line for line in lines if re.match(LINE_TIME_STR_PATTERN, line)]
+            if len(lines_with_time) == 0:
+                return None
+            if lines_num:
+                last_lines = lines_with_time[-lines_num:]
+            else:
+                last_lines = lines_with_time
+        return last_lines
+
+    def read_latest_logs(self):
+        latest_logs = self.read_log_lines()[::-1]
+        latest_logs_shorted = ['{}......'.format(line[0:255]) if len(line) > 255 else line for line in latest_logs]
+        return latest_logs_shorted
 
     @property
     def automation_type(self):

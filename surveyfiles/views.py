@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import os
 import re
 import time
 
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, FormView
+from django.urls import reverse_lazy, reverse
+from django.views.generic import ListView, CreateView, FormView, DetailView
 # Create your views here.
+from django.views.generic.edit import FormMixin
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from pure_pagination.mixins import PaginationMixin
@@ -16,7 +16,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 
 from .filters import SurveyFileAutomationFilter
 from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm, DataExportForm
-from .models import SurveyFileAutomation, fortis_job_no_pattern
+from .models import SurveyFileAutomation, FORTIS_JOB_NO_PATTERN
 from .tables import SurveyFileAutomationTable
 from .tasks import *
 
@@ -125,6 +125,20 @@ class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, L
     paginate_by = 10
 
 
+class SurveyFileDetailView(DetailView):
+    model = SurveyFileAutomation
+    template_name = 'surveyfiles/details_page.html'
+
+    # def get_context_data(self, **kwargs):
+    #     context = super(SurveyFileDetailView, self).get_context_data(**kwargs)
+    #     return context
+
+    # def get_form_kwargs(self):
+    #     kwargs = super(SurveyFileDetailView, self).get_form_kwargs()
+    #     kwargs.update({'user': self.request.user})
+    #     return kwargs
+
+
 class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
     model = SurveyFileAutomation
     template_name = 'surveyfiles/jxl_cards.html'
@@ -185,10 +199,35 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
     model = SurveyFileAutomation
     form_class = SurveyFileAutomationForm
     template_name = 'surveyfiles/jxl_upload.html'
-    success_url = reverse_lazy('surveyfiles:jxl_create_view')
-    # success_url = '/success/'
-    success_message = "%(file_name)s - Site %(site_no)s - %(utm_sr_name)s - %(scale_value)s was uploaded successfully !" \
-                      " Please wait for QC emails"
+
+    def __init__(self, **kwargs):
+        super(CreateSurveyFileAutomationView, self).__init__(**kwargs)
+        self.reference_object = None
+        self.site_data_db = None
+
+    def get_success_url(self):
+        return reverse('surveyfiles:details_view', kwargs={'pk': self.object.pk})
+
+    def get_initial(self):
+        initial = super(CreateSurveyFileAutomationView, self).get_initial()
+        reference_id = self.request.GET.get('reference_id')
+        if reference_id:
+            self.reference_object = SurveyFileAutomation.objects.get(tracking_id=reference_id)
+            self.site_data_db = self.reference_object.site_data_db
+        else:
+            self.reference_object = None
+        if self.reference_object:
+            initial.update({
+                'document': self.reference_object.document,
+                'extract_input_values': False,
+                'utm_sr_name': self.reference_object.utm_sr_name,
+                'scale_value': self.reference_object.scale_value,
+                'create_gis_data': False,
+                'site_data_db': self.reference_object.site_data_db,
+                'site_no': self.reference_object.site_no,
+                'exporting_types_selected': self.reference_object.exporting_types_selected
+            })
+        return initial
 
     def get_form_kwargs(self):
         kwargs = super(CreateSurveyFileAutomationView, self).get_form_kwargs()
@@ -207,45 +246,41 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         logger_request.info('call saving in form', extra={'username': self.request.user.username})
         form.save()
         logger_request.info('saved in form successfully', extra={'username': self.request.user.username})
-        logger_request.info('Document: {}'.format(self.request.FILES[u'document']),
-                            extra={'username': self.request.user.username})
-        return super(CreateSurveyFileAutomationView, self).form_valid(form)
+        # logger_request.info('Document: {}'.format(self.request.FILES[u'document']),
+        #                     extra={'username': self.request.user.username})
+        response = super(CreateSurveyFileAutomationView, self).form_valid(form)
+        self.run_tasks(form.cleaned_data)
+        return response
 
-        # return self.render_to_response(self.get_context_data(
-        #     form=form,
-        #     uploaded_file=self.request.FILES[u'document']))
-
-    def get_success_message(self, cleaned_data):
+    def run_tasks(self, cleaned_data):
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.request.user.username})
         logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
                             extra={'username': self.request.user.username})
-        uploader_usernane = self.request.user.username
         job_no = self.object.job_no
         site_no = self.object.site_no
-        utm_sr_name = self.object.utm_sr_name
-        scale_value = self.object.scale_value
-        document_path = self.object.document.file.name
-        document_name = os.path.basename(document_path)
+        if not self.reference_object:
+            document_path = self.object.document.file.name
+            document_name = os.path.basename(document_path)
+        else:
+            document_path = None
+            document_name = None
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
-        target_field_folder = self.object.target_field_folder
 
-        args = (uploader_usernane, job_no, document_name, uploaded_time_str, target_field_folder)
-        notify_uploading.si(*args) \
+        kwargs = dict(username=self.request.user.username,
+                      job_no=job_no,
+                      uploaded_file=document_name,
+                      site_data_db=self.site_data_db,
+                      uploaded_time_str=uploaded_time_str,
+                      target_field_folder=self.object.target_field_folder,
+                      utm_sr_name=self.object.utm_sr_name,
+                      scale_factor=self.object.scale_value,
+                      exporting_types=self.object.exporting_types_selected
+                      )
+        notify_uploading.si(**kwargs) \
             .set(queue=task_queue) \
             .apply_async()
-        # uploader = self.object.uploader
-        # uploader_email = self.object.uploader_email
-        # uploaded_time = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
-        # project_manager = self.object.project_manager
-        # project_manager_email = self.object.project_manager_email
+
         tracking_id = self.object.tracking_id
-
-        # if self.object.create_data_report == 1 and os.path.basename(document_path)[-4:].lower() == '.jxl':
-
-        # if self.object.raise_invalid_errors == 1:
-        #     raise_invalid_errors = True
-        # else:
-        #     raise_invalid_errors = False
 
         if self.object.create_gis_data == 1:
             create_gis_data = True
@@ -265,6 +300,13 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         else:
             create_client_report = False
 
+        if self.reference_object:
+            utm_sr_name = self.reference_object.utm_sr_name
+            scale_value = self.reference_object.scale_value
+        else:
+            utm_sr_name = self.object.utm_sr_name
+            scale_value = self.object.scale_value
+
         uploading_info = [
             self.object.job_no,
             self.object.site_no,
@@ -273,16 +315,19 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S'),
             self.object.project_manager,
             self.object.project_manager_email,
-            self.object.utm_sr_name,
-            self.object.scale_value
+            utm_sr_name,
+            scale_value
         ]
 
         uploader = self.object.uploader
-        args = (job_no, site_no, document_path, uploader, tracking_id, create_gis_data, create_client_report,
-                exporting_types,
-                overwriting, uploading_info)
+        kwargs = dict(job_no=job_no, site_no=site_no, uploaded_file=document_path, uploader=uploader,
+                      tracking_id=tracking_id, create_gis_data=create_gis_data,
+                      site_data_db=self.site_data_db, utm_sr_name=utm_sr_name, scale_value=scale_value,
+                      create_client_report=create_client_report,
+                      exporting_types=exporting_types,
+                      overwriting=overwriting, uploading_info=uploading_info)
 
-        quality_check_jxl_task = quality_check_jxl.si(*args).set(queue=task_queue)
+        quality_check_jxl_task = quality_check_jxl.si(**kwargs).set(queue=task_queue)
         quality_check_jxl_task.apply_async()
 
         return self.success_message % dict(
@@ -309,19 +354,10 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         if worker_status is not None:
             context['worker_status'] = worker_status
 
+        if self.reference_object:
+            context['reference_object'] = self.reference_object
+
         return context
-
-    # def get_context_data(self, **kwargs):
-    #     context = super(CreateJXLFileAutomationView, self).get_context_data(**kwargs)
-    #     try:
-    #         context['uploaded_file'] = self.request.FILES[u'document']
-    #     except:
-    #         pass
-    #
-    #     return context
-
-    # def get_success_url(self, *args, **kwargs):
-    #     return reverse('jxlfiles:jxl_list_view')
 
 
 class DataExportView(SuccessMessageMixin, FormView):
@@ -335,9 +371,23 @@ class DataExportView(SuccessMessageMixin, FormView):
         super(DataExportView, self).__init__(*args, **kwargs)
         self.log_path = None
 
+    def get_initial(self):
+        initial = super(DataExportView, self).get_initial()
+        reference_id = self.request.GET.get('reference_id')
+        if reference_id:
+            automation_object = SurveyFileAutomation.objects.get(tracking_id=reference_id)
+            if automation_object:
+                initial.update({
+                    'site_db_path': automation_object.site_data_db,
+                    'site_no': automation_object.site_no,
+                    'exporting_types_selected': automation_object.exporting_types_selected
+                })
+        return initial
+
     def get_form_kwargs(self):
         kwargs = super(DataExportView, self).get_form_kwargs()
         kwargs.update({'user': self.request.user})
+        # print('view kwargs: {}'.format(kwargs))
         return kwargs
 
     def send_email(self, job_no, site_db_path, site_no, exporting_types, log_path, contact_emails):
@@ -376,7 +426,7 @@ class DataExportView(SuccessMessageMixin, FormView):
         contact_emails = [str(item).strip() for item in re.split('[,;\s]+', form.cleaned_data.get('contact_emails'))
                           if len(str(item).strip()) > 0]
         # overwriting = False
-        job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
+        job_no = re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(site_db_path)).groups()[0]
 
         site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
         if site_no is None:
@@ -465,25 +515,34 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
 
     def get_success_message(self, cleaned_data):
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.request.user.username})
-        logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
-                            extra={'username': self.request.user.username})
-        uploader_usernane = self.request.user.username
+        # logger_request.info('user id: {} type - {}'.format(self.request.user.id, type(self.request.user.id)),
+        #                     extra={'username': self.request.user.username})
+        # uploader_usernane = self.request.user.username
         job_no = self.object.job_no
         site_no = self.object.site_no
         utm_sr_name = self.object.utm_sr_name
         scale_value = self.object.scale_value
         uploaded_file = self.object.document.file.name
+        site_data_db = self.object.site_data_db
         document_name = os.path.basename(uploaded_file)
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
         project_manager_name = self.object.project_manager
         project_manager_email = self.object.project_manager_email
         surveyor_name = self.object.surveyor_name
         surveyor_email = self.object.surveyor_email
-        site_data_db = self.object.site_data_db
         target_field_folder = self.object.target_field_folder
 
-        args = (uploader_usernane, job_no, document_name, uploaded_time_str, site_data_db, target_field_folder)
-        notify_uploading.si(*args) \
+        kwargs = dict(username=self.request.user.username,
+                      job_no=job_no,
+                      uploaded_file=document_name,
+                      uploaded_time_str=uploaded_time_str,
+                      target_field_folder=self.object.target_field_folder,
+                      utm_sr_name=self.object.utm_sr_name,
+                      scale_factor=self.object.scale_value,
+                      exporting_types=self.object.exporting_types_selected,
+                      site_data_db=site_data_db
+                      )
+        notify_uploading.si(**kwargs) \
             .set(queue=task_queue) \
             .apply_async()
         tracking_id = self.object.tracking_id

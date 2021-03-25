@@ -12,7 +12,8 @@
 
         <div style="text-align: center">
             <a class="uploader-button" href="{% url 'surveyfiles:jxl_create_view' %}">JXL Validation (for Surveyors)</a>
-            <a class="uploader-button" href="{% url 'surveyfiles:ppp_automation_view' %}">Create Transmittals (for PM)</a>
+            <a class="uploader-button" href="{% url 'surveyfiles:ppp_automation_view' %}">Create Transmittals (for
+                PM)</a>
         </div>
         <p class="web-title">JXL Automation Overview</p>
         <p class="table-title-1" id="refreshtime">Results</p>
@@ -45,22 +46,29 @@
             {% for object in object_list %}
                 {% if object.document %}
                     <div class="file-card">
-                        <p class="card-header">{{ object.job_no }} S{{ object.site_no }} ({{ object.automation_type }})</p>
+                        <p class="card-header">
+                            <a href="{% url 'surveyfiles:details_view' pk=object.tracking_id %}">
+                                {{ object.job_no }} S{{ object.site_no }} ({{ object.automation_type }})
+                            </a>
+                        </p>
                         <div class="card-body">
-                            {% if object.uploader_name%}
-                                <p class="card-title">{{ object.uploader_name }} at {{ object.uploaded_time|date:'Y-m-d H:i' }}</p>
-                                {% else %}
-                                <p class="card-title">{{ object.uploader }} at {{ object.uploaded_time|date:'Y-m-d H:i' }}</p>
+                            {% if object.uploader_name %}
+                                <p class="card-title">{{ object.uploader_name }}
+                                    at {{ object.uploaded_time|date:'Y-m-d H:i' }}</p>
+                            {% else %}
+                                <p class="card-title">{{ object.uploader }}
+                                    at {{ object.uploaded_time|date:'Y-m-d H:i' }}</p>
                             {% endif %}
                             <p class="card-text">Log: {{ object.get_log_link }} ({{ object.latest_log_time }})</p>
                             <p class="card-text">Survey File: {{ object.document|get_file_name }}</p>
                             {% if object.target_field_folder %}
                                 <p class="card-text">Field Folder: {{ object.get_field_folder_link }}</p>
                             {% endif %}
-                            <p class="qc-passed-text">QC: {{ object.qc_passed }}
-                                ({{ object.total_qc_time }})</p>
-                            <p class="automation-status-text">Automation: {{ object.automation_status }}
-                                ({{ object.total_automation_time }})</p>
+                            {% if object.qc_time %}<p class="qc-passed-text">QC: {{ object.qc_passed }}
+                                ({{ object.total_qc_time }})</p>{% endif %}
+                            {% if object.automation_started %}
+                                <p class="automation-status-text">Automation: {{ object.automation_status }}
+                                    ({{ object.total_automation_time }})</p>{% endif %}
                         </div>
                     </div>
                 {% endif %}

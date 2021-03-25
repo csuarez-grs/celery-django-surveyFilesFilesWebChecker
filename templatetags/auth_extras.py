@@ -3,6 +3,8 @@ import os
 from django import template
 from django.contrib.auth.models import Group
 
+from users.models import LDAPUser
+
 register = template.Library()
 
 
@@ -52,3 +54,12 @@ def get_verbose_field_name(instance, field_name):
     Returns verbose_name for a field.
     """
     return instance._meta.get_field(field_name).verbose_name.title()
+
+
+@register.filter('get_ldap_user_name')
+def get_ldap_user_name(user_id):
+    ldap_user = LDAPUser.objects.get(username=user_id)
+    if ldap_user:
+        return '%s %s' % (ldap_user.first_name.title(), ldap_user.last_name.title())
+    else:
+        return user_id

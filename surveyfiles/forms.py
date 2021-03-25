@@ -1,21 +1,12 @@
 from django import forms
-
-from new_fortis_tools_20190625 import read_jxl_info
-from templatetags.auth_extras import *
-from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_all_profiles_str, default_exporting_types_options
-
-from SurveyFilesWebChecker.settings import logger_request
-from django import forms
 import re
+import os
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
 
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
-from templatetags.auth_extras import *
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_exporting_types_options, fortis_job_no_pattern, field_sketch_pdf_type, unit_report_type
+    default_exporting_types_options, FORTIS_JOB_NO_PATTERN, field_sketch_pdf_type, unit_report_type
 import field_sketch_pdf
 
 site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
@@ -25,6 +16,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
     # raise_invalid_errors = forms.BooleanField(initial=True, required=False,
     #                                           label='Raise Invalid Profile Connection Errors')
     create_gis_data = forms.BooleanField(initial=True, required=False)
+    site_data_db = forms.CharField(required=False)
     # create_client_report = forms.BooleanField(initial=False, required=False)
     # exporting_profile_no = forms.CharField(initial=default_all_profiles_str, required=False,
     #                                        label='Leave it as it is, or type Exporting Profile No, e.g. 1, 2, 5')
@@ -41,12 +33,21 @@ class SurveyFileAutomationForm(forms.ModelForm):
                   'utm_sr_name', 'scale_value',
                   # 'raise_invalid_errors',
                   'create_gis_data',
+                  'site_data_db',
                   'exporting_types_selected',
                   'overwriting']
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
+        initial = kwargs.get('initial')
+        if initial:
+            self._use_reference = True
+            for field in ['document', 'extract_input_values', 'utm_sr_name', 'scale_value', 'create_gis_data', 'site_data_db']:
+                self.fields[field].disabled = True
+                self.fields[field].widget = forms.HiddenInput()
+        else:
+            self._use_reference = False
         self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = False
         self.fields['overwriting'].required = False
@@ -55,12 +56,13 @@ class SurveyFileAutomationForm(forms.ModelForm):
     def clean(self):
         cleaned_data = self.cleaned_data
         # logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
-        document_name = str(cleaned_data['document'])
+        document = cleaned_data.get('document')
         # logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
         create_gis_data = bool(cleaned_data['create_gis_data'])
+        site_data_db = cleaned_data['site_data_db']
         exporting_types_selected = cleaned_data['exporting_types_selected']
         # print(document_name, type(document_name),
         #     extract_input_values, type(extract_input_values),
@@ -69,19 +71,22 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
         # logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 
-        if not create_gis_data and exporting_types_selected:
-            self.add_error('create_gis_data', 'Please select "create_gis_data" if exporting any data files !')
-        else:
-            if self.has_error('create_gis_data'):
-                del self._errors['create_gis_data']
+        if not site_data_db:
+            if not create_gis_data and exporting_types_selected:
+                self.add_error('create_gis_data', 'Please select "create_gis_data" if exporting any data files !')
+            else:
+                if self.has_error('create_gis_data'):
+                    del self._errors['create_gis_data']
 
-        if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
-                or document_name[-4:].lower() == '.csv':
-            # logger_request.info('Checking if UTM and scale are entered.', extra={'username': self.user.username})
-            if utm_sr_name is None:
-                self.add_error('utm_sr_name', 'Please select UTM name')
-            if scale_value is None:
-                self.add_error('scale_value', 'Please type scale factor')
+        if not self._use_reference and document:
+            document_name = document.name
+            if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
+                    or document_name[-4:].lower() == '.csv':
+                # logger_request.info('Checking if UTM and scale are entered.', extra={'username': self.user.username})
+                if utm_sr_name is None:
+                    self.add_error('utm_sr_name', 'Please select UTM name')
+                if scale_value is None:
+                    self.add_error('scale_value', 'Please type scale factor')
 
         logger_request.info('cleaning is done:\n{}'.format(cleaned_data), extra={'username': self.user.username})
 
@@ -180,6 +185,24 @@ def validate_emails(text):
         raise forms.ValidationError('{} is not valid emails!'.format(', '.join(any_errors)))
 
 
+# class DetailsPageExportForm(forms.Form):
+#     exporting_types_selected = forms.MultipleChoiceField(choices=exporting_types_options,
+#                                                          initial=tuple(default_exporting_types_options),
+#                                                          widget=forms.widgets.CheckboxSelectMultiple,
+#                                                          required=False)
+#
+#     background_imagery = forms.ChoiceField(label='Background Imagery',
+#                                            choices=((item, item.split('\\')[1])
+#                                                     for item in field_sketch_pdf.IMAGERY_CHOICES),
+#                                            initial=field_sketch_pdf.VALTUS_IMAGERY)
+#
+#     contact_emails = forms.CharField(label='Contact Emails (Separated by "," or ";")', required=False, max_length=255,
+#                                      validators=[validate_emails])
+#
+#     def __init__(self, *args, **kwargs):
+#         super(DetailsPageExportForm, self).__init__(*args, **kwargs)
+
+
 class DataExportForm(forms.Form):
     site_db_path = forms.CharField(label='Site GeoDatabase Path', max_length=500)
     site_no = forms.IntegerField(label='Site No (In case all sites data are created in the above single geodatabase !)',
@@ -203,6 +226,7 @@ class DataExportForm(forms.Form):
                                      validators=[validate_emails])
 
     def __init__(self, *args, **kwargs):
+        print('form kwargs: {}'.format(kwargs))
         self.user = kwargs.pop('user')
         super(DataExportForm, self).__init__(*args, **kwargs)
 
@@ -219,7 +243,7 @@ class DataExportForm(forms.Form):
                     _('Please provide valid jxl path !!!')
                 )
 
-            elif not re.search(fortis_job_no_pattern, os.path.basename(source_jxl_path)):
+            elif not re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(source_jxl_path)):
                 raise forms.ValidationError(
                     _('No Fortis job "xxxFxxxx" found in jxl file name !!!')
                 )
@@ -237,7 +261,7 @@ class DataExportForm(forms.Form):
                 )
 
             site_db_name = os.path.basename(site_db_path)
-            if not re.search(fortis_job_no_pattern, site_db_name):
+            if not re.search(FORTIS_JOB_NO_PATTERN, site_db_name):
                 raise forms.ValidationError(
                     _('No Fortis job "xxxFxxxx" found in geodatabase name')
                 )
@@ -252,8 +276,8 @@ class DataExportForm(forms.Form):
 
         if site_db_path is not None and os.path.isdir(site_db_path) and source_jxl_path is not None \
                 and os.path.isfile(source_jxl_path):
-            site_db_job_no = re.search(fortis_job_no_pattern, os.path.basename(site_db_path)).groups()[0]
-            jxl_job_no = re.search(fortis_job_no_pattern, os.path.basename(source_jxl_path)).groups()[0]
+            site_db_job_no = re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(site_db_path)).groups()[0]
+            jxl_job_no = re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(source_jxl_path)).groups()[0]
             if site_db_job_no.upper() != jxl_job_no.upper():
                 raise forms.ValidationError(
                     _('Site db job no {} is not the same as jxl job no {}'.format(site_db_job_no, jxl_job_no))
@@ -318,10 +342,10 @@ class PPPFileAutomationForm(forms.ModelForm):
                             extra={'username': self.user.username})
         logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 
-        document_job_no = re.search(fortis_job_no_pattern, document_name).groups()[0]
+        document_job_no = re.search(FORTIS_JOB_NO_PATTERN, document_name).groups()[0]
         for item in [target_field_folder, site_data_db]:
-            if item and re.search(fortis_job_no_pattern, os.path.basename(item)):
-                item_job_no = re.search(fortis_job_no_pattern, os.path.basename(item)).groups()[0]
+            if item and re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(item)):
+                item_job_no = re.search(FORTIS_JOB_NO_PATTERN, os.path.basename(item)).groups()[0]
                 if document_job_no.upper() != item_job_no.upper():
                     raise forms.ValidationError(
                         '{} has job no {} (Different from {}) in document file !!!'
@@ -383,7 +407,7 @@ class JobSetUpForm(forms.Form):
         selected_sites = [item.strip() for item in str(cleaned_data['selected_sites']).strip().split(',')
                           if len(item.strip()) > 0]
 
-        if not re.match(fortis_job_no_pattern, job_no):
+        if not re.match(FORTIS_JOB_NO_PATTERN, job_no):
             raise forms.ValidationError('{} is not Fortis job pattern !!!'.format(job_no))
 
         if selected_sites and any([not re.match('^\d+$', item) for item in selected_sites]):

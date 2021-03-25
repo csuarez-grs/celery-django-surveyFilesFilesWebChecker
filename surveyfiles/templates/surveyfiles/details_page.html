@@ -1,0 +1,74 @@
+{% extends 'surveyfiles/base.html' %}
+{% load bootstrap4 %}
+{% load auth_extras %}
+
+{% load render_table from django_tables2 %}
+
+{% block title %}Automation Details{% endblock %}
+
+{% block content %}
+    <div class="details-div">
+        <p><b>{{ object.document_name }}</b> uploaded
+            by <b>{{ object.uploader|get_ldap_user_name }}</b>
+            @ {{ object.uploaded_time }}</p>
+        {% if object.get_field_folder_link %}
+            <p>Transmittals Request: {{ object.get_field_folder_link }}</p>
+        {% endif %}
+        <p>Project: {{ object.utm_sr_name }} |
+            Scale: {{ object.scale_value }}</p>
+        <p>
+            {% if object.qc_time %}
+                {% if object.qc_passed == 'Succeeded' %}
+                    <p class="details-success">QC passed ({{ object.total_qc_time }})</p>
+                {% else %}
+                    <div class="details-errors">
+                        QC failed ({{ object.total_qc_time }}). {{ object.jxl_errors }}
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% if object.automation_started %}
+            {% if 'Failure' in object.automation_status %}
+                <div class="details-errors">
+                    Automation: {{ object.automation_status }}
+                    {% if 'geoprocessing describe geometry object' in object.errors %}
+                        Memory issues !
+                    {% else %}
+                        {{ object.errors }}
+                    {% endif %}
+                </div>
+            {% elif 'Success' in object.automation_status %}
+                <p class="details-success">
+                    Automation: {{ object.automation_status }}
+                </p>
+            {% else %}
+                <p class="details-running">
+                    Automation: {{ object.automation_status }}
+                </p>
+            {% endif %}
+
+            {% if object.automation_started %}
+                <p>Automation started at {{ object.automation_started }} ({{ object.total_automation_time }})</p>
+            {% else %}
+                <p>Not started yet !</p>
+            {% endif %}
+            {% if object.automation_ended %}<p>Automation ended at {{ object.automation_ended }}</p>{% endif %}
+            <div>
+                <label style="display: block">Last logs
+                    <div class="log-area">{{ object.read_latest_logs | join:"<br />" }}</div>
+                </label>
+            </div>
+            <div class="outputs-div">
+                <div>{% if object.exp_path %}EXP: {{ object.get_exp_links }}{% endif %}</div>
+                <div>{% if object.ald_csv_path %}ALD CSV:
+                    {{ object.get_ald_csv_links }}{% endif %}</div>
+                <div>{% if object.unit_report_path %}UNIT REPORT: {{ object.unit_report_path }}{% endif %}</div>
+                <div>{% if object.kmz_path %}KMZ: {{ object.get_kmz_link }}{% endif %}</div>
+            </div>
+            {% if object.site_data_db  and object.automation_ended %}
+                <a class="btn btn-warning small-button"
+                   href="{% url 'surveyfiles:jxl_create_view' %}?reference_id={{ object.tracking_id }}"
+                >Export Data</a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
