@@ -22,7 +22,7 @@ from .tasks import *
 
 from SurveyFilesWebChecker.settings import logger_request, task_queue
 from django.core.mail import send_mail
-from SurveyFilesWebChecker.settings import EMAIL_HOST_USER
+from SurveyFilesWebChecker.settings import EMAIL_HOST_USER, dev_test
 
 
 class JobSetUpView(SuccessMessageMixin, FormView):
@@ -124,6 +124,9 @@ class SurveyFilesListFilterView(SingleTableMixin, FilterView, PaginationMixin, L
 
     paginate_by = 10
 
+    def get_queryset(self):
+        return SurveyFileAutomation.objects.filter(dev_test=dev_test)
+
 
 class SurveyFileDetailView(DetailView):
     model = SurveyFileAutomation
@@ -151,6 +154,9 @@ class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
     #     valid_id_list = [object.tracking_id for object in SurveyFileAutomation.objects.all()
     #                      if os.path.isfile(object.document.path)]
     #     return SurveyFileAutomation.objects.filter(tracking_id__in=valid_id_list)
+
+    def get_queryset(self):
+        return SurveyFileAutomation.objects.filter(dev_test=dev_test)
 
     def get_form_kwargs(self):
         kwargs = super(SurveyFilesCardsFilterView, self).get_form_kwargs()

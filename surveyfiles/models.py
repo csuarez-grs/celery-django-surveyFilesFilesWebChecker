@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 
-from SurveyFilesWebChecker.settings import logger_model, TRACKING_TABLE_NAME
+from SurveyFilesWebChecker.settings import logger_model, TRACKING_TABLE_NAME, dev_test
 
 # Create your models here.
 from django.utils.html import format_html
@@ -258,7 +258,7 @@ class SurveyFileAutomation(models.Model):
     site_data_db = models.CharField(db_column='Site Data DB', max_length=500, blank=True, null=True,
                                     validators=[validate_site_data_db],
                                     help_text=r'Paste one valid site db to skip "create gis data"'
-                                                         ' if you already have GIS data created'
+                                              ' if you already have GIS data created'
                                               r' (\\grs.com\DFS\GIS\GIS_Working\JXL_Web_Job_Root\Dev\jxue'
                                               r'\20MF0041\CADD\Mapping\01_Data\Site_1\20MF0041_Site_1.gdb)')
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
@@ -323,6 +323,7 @@ class SurveyFileAutomation(models.Model):
     total_profiles_meters = models.IntegerField(db_column='TotalProfilesMeters', null=True, blank=True)
     total_points = models.IntegerField(db_column='TotalPoints', null=True, blank=True)
     total_structures = models.IntegerField(db_column='TotalStructures', null=True, blank=True)
+    dev_test = models.BooleanField(db_column='DevTest', default=False)
 
     class Meta:
         managed = True
@@ -420,6 +421,8 @@ class SurveyFileAutomation(models.Model):
     def save(self, *args, **kwargs):
 
         if self._state.adding:
+            self.dev_test = dev_test
+
             job_no = self.job_no
             self.tracking_id = str(uuid.uuid1())
             self.uploaded_time = datetime.datetime.now()
@@ -484,40 +487,39 @@ class SurveyFileAutomation(models.Model):
     def get_time_ago(self):
         return get_obj_time_ago(self.uploaded_time)
 
+    def get_file_links(self, file_type):
+
+        file_paths = getattr(self, file_type, None)
+
+        if file_paths:
+            file_list = [str(item).strip() for item in file_paths.split('; ')
+                         if os.path.isfile(str(item).strip())]
+
+            if len(file_list) > 0:
+                return format_html(' '.join(sorted([get_target_url(item) for item in file_list])))
+
+        return None
+
     def get_exp_links(self):
-
-        file_list = [str(item).strip() for item in self.exp_path.split('; ')
-                     if os.path.isfile(str(item).strip())]
-
-        if len(file_list) > 0:
-            links_str = format_html(' '.join(sorted([get_target_url(item) for item in file_list])))
-        else:
-            links_str = None
-
-        return links_str
+        return self.get_file_links('exp_path')
 
     def get_ald_csv_links(self):
+        return self.get_file_links('ald_csv_path')
 
-        file_list = [str(item).strip() for item in self.ald_csv_path.split('; ')
-                     if os.path.isfile(str(item).strip())]
-
-        if len(file_list) > 0:
-            links_str = format_html(' '.join(sorted([get_target_url(item) for item in file_list])))
-        else:
-            links_str = None
-
-        return links_str
+    def get_field_sketch_pdf_links(self):
+        return self.get_file_links('field_sketch_pdf_path')
 
     def get_wgs_84_csv_link(self):
-        if self.wgs84_csv is not None and os.path.isfile(self.wgs84_csv):
-            file_link = get_target_url(self.wgs84_csv)
-        else:
-            file_link = None
-        return file_link
+        if self.wgs84_csv and os.path.isfile(self.wgs84_csv):
+            return get_target_url(self.wgs84_csv)
+        return None
 
     def get_kmz_link(self):
-        if self.kmz_path is not None and os.path.isfile(self.kmz_path):
-            file_link = get_target_url(self.kmz_path)
-        else:
-            file_link = None
-        return file_link
+        if self.kmz_path and os.path.isfile(self.kmz_path):
+            return get_target_url(self.kmz_path)
+        return None
+
+    def get_unit_report_link(self):
+        if self.unit_report_path and os.path.isfile(self.unit_report_path):
+            return get_target_url(self.unit_report_path)
+        return None

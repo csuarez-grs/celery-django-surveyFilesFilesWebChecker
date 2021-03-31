@@ -424,3 +424,4 @@ from decouple import config
 
 web_title = config('WEBTITLE')
 sub_working_folder = config('sub_working_folder')
+dev_test = config('dev_test', False)

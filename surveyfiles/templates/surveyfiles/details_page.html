@@ -16,6 +16,11 @@
         {% endif %}
         <p>Project: {{ object.utm_sr_name }} |
             Scale: {{ object.scale_value }}</p>
+        {% if object.total_profiles %}
+            <p>Total {{ object.total_profiles }} Profiles {{ object.total_profiles_meters|floatformat:0 }} Meters</p>
+            <p>Total {{ object.total_points }} Points</p>
+            <p>Total {{ object.total_structures }} Structures</p>
+        {% endif %}
         <p>
             {% if object.qc_time %}
                 {% if object.qc_passed == 'Succeeded' %}
@@ -58,11 +63,14 @@
                 </label>
             </div>
             <div class="outputs-div">
+                <div>{% if object.wgs84_csv %}EXP: {{ object.get_wgs_84_csv_link }}{% endif %}</div>
                 <div>{% if object.exp_path %}EXP: {{ object.get_exp_links }}{% endif %}</div>
                 <div>{% if object.ald_csv_path %}ALD CSV:
                     {{ object.get_ald_csv_links }}{% endif %}</div>
-                <div>{% if object.unit_report_path %}UNIT REPORT: {{ object.unit_report_path }}{% endif %}</div>
                 <div>{% if object.kmz_path %}KMZ: {{ object.get_kmz_link }}{% endif %}</div>
+                <div>{% if object.unit_report_path %}UNIT REPORT: {{ object.get_unit_report_link }}{% endif %}</div>
+                <div>{% if object.field_sketch_pdf_path %}Field Sketch PDF:
+                    {{ object.get_field_sketch_pdf_links }}{% endif %}</div>
             </div>
             {% if object.site_data_db  and object.automation_ended %}
                 <a class="btn btn-warning small-button"
