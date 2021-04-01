@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _
 from multiselectfield import MultiSelectField
 
 from core.models import GRSJobInfo
+import field_sketch_pdf
 
 from new_fortis_tools_20190625 import project_coordinates_list, default_exporting_types, read_jxl_info, \
     parse_surveyor_from_file_name, field_sketch_pdf_type, unit_report_type
@@ -324,6 +325,10 @@ class SurveyFileAutomation(models.Model):
     total_points = models.IntegerField(db_column='TotalPoints', null=True, blank=True)
     total_structures = models.IntegerField(db_column='TotalStructures', null=True, blank=True)
     dev_test = models.BooleanField(db_column='DevTest', default=False)
+    background_imagery = models.CharField(db_column='Background Imagery', max_length=100,
+                                          choices=((item, item.split('\\')[1])
+                                                   for item in field_sketch_pdf.IMAGERY_CHOICES),
+                                          blank=True, null=True, default=field_sketch_pdf.VALTUS_IMAGERY)
 
     class Meta:
         managed = True

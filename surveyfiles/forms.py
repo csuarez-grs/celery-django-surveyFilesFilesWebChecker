@@ -35,6 +35,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
                   'create_gis_data',
                   'site_data_db',
                   'exporting_types_selected',
+                  'background_imagery',
                   'overwriting']
 
     def __init__(self, *args, **kwargs):

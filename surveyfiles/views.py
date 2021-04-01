@@ -231,7 +231,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                 'create_gis_data': False,
                 'site_data_db': self.reference_object.site_data_db,
                 'site_no': self.reference_object.site_no,
-                'exporting_types_selected': self.reference_object.exporting_types_selected
+                'exporting_types_selected': self.reference_object.exporting_types_selected,
+                'background_imagery': self.reference_object.background_imagery,
             })
         return initial
 
@@ -280,7 +281,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       target_field_folder=self.object.target_field_folder,
                       utm_sr_name=self.object.utm_sr_name,
                       scale_factor=self.object.scale_value,
-                      exporting_types=self.object.exporting_types_selected
+                      exporting_types=self.object.exporting_types_selected,
+                      background_imagery=self.object.background_imagery
                       )
         notify_uploading.si(**kwargs) \
             .set(queue=task_queue) \
@@ -306,12 +308,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         else:
             create_client_report = False
 
-        if self.reference_object:
-            utm_sr_name = self.reference_object.utm_sr_name
-            scale_value = self.reference_object.scale_value
-        else:
-            utm_sr_name = self.object.utm_sr_name
-            scale_value = self.object.scale_value
+        utm_sr_name = self.object.utm_sr_name
+        scale_value = self.object.scale_value
 
         uploading_info = [
             self.object.job_no,
@@ -330,7 +328,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       tracking_id=tracking_id, create_gis_data=create_gis_data,
                       site_data_db=self.site_data_db, utm_sr_name=utm_sr_name, scale_value=scale_value,
                       create_client_report=create_client_report,
-                      exporting_types=exporting_types,
+                      exporting_types=exporting_types, background_imagery=self.object.background_imagery,
                       overwriting=overwriting, uploading_info=uploading_info)
 
         quality_check_jxl_task = quality_check_jxl.si(**kwargs).set(queue=task_queue)
