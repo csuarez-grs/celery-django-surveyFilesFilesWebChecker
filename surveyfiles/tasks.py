@@ -77,9 +77,18 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
 
 
 @celery_app.task()
-def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_field_folder,
-                     utm_sr_name, scale_factor, exporting_types, site_data_db=None):
+def notify_uploading(**kwargs):
     try:
+        username = kwargs.get('username')
+        job_no = kwargs.get('job_no')
+        uploaded_file = kwargs.get('uploaded_file')
+        uploaded_time_str = kwargs.get('uploaded_time_str')
+        target_field_folder = kwargs.get('target_field_folder')
+        utm_sr_name = kwargs.get('utm_sr_name')
+        scale_factor = kwargs.get('scale_factor')
+        exporting_types = kwargs.get('exporting_types')
+        site_data_db = kwargs.get('site_data_db')
+        detail_url = kwargs.get('detail_url')
         # lookup user by id and send them a message
         gis_email = 'gis@globalraymac.ca'
         user = User.objects.get(username=username)
@@ -103,6 +112,9 @@ def notify_uploading(username, job_no, uploaded_file, uploaded_time_str, target_
         msg_content += '<br>UTM: {}<br>Scale Factor: {}'.format(utm_sr_name, scale_factor)
         if exporting_types:
             msg_content += '<br>Exporting Types: {}'.format(', '.join(exporting_types))
+
+        if detail_url:
+            msg_content += '<br>Web Status: {}'.format(ma.hyperLinkFileCustomizedName(detail_url, 'Go'))
 
         if sub_working_folder == 'Dev':
             msg_subject += ' ({})'.format(sub_working_folder)

@@ -273,6 +273,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
             document_name = None
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
 
+        detail_url = self.request.build_absolute_uri(reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
+
         kwargs = dict(username=self.request.user.username,
                       job_no=job_no,
                       uploaded_file=document_name,
@@ -282,7 +284,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       utm_sr_name=self.object.utm_sr_name,
                       scale_factor=self.object.scale_value,
                       exporting_types=self.object.exporting_types_selected,
-                      background_imagery=self.object.background_imagery
+                      background_imagery=self.object.background_imagery,
+                      detail_url=detail_url,
                       )
         notify_uploading.si(**kwargs) \
             .set(queue=task_queue) \
@@ -536,6 +539,8 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
         surveyor_email = self.object.surveyor_email
         target_field_folder = self.object.target_field_folder
 
+        detail_url = self.request.build_absolute_uri(reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
+
         kwargs = dict(username=self.request.user.username,
                       job_no=job_no,
                       uploaded_file=document_name,
@@ -544,7 +549,8 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
                       utm_sr_name=self.object.utm_sr_name,
                       scale_factor=self.object.scale_value,
                       exporting_types=self.object.exporting_types_selected,
-                      site_data_db=site_data_db
+                      site_data_db=site_data_db,
+                      detail_url=detail_url,
                       )
         notify_uploading.si(**kwargs) \
             .set(queue=task_queue) \
