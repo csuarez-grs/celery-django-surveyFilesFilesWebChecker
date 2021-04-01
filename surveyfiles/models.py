@@ -359,13 +359,15 @@ class SurveyFileAutomation(models.Model):
             if len(lines_with_time) == 0:
                 return None
             if lines_num:
+                if lines_num > len(lines_with_time):
+                    lines_num = len(lines_with_time)
                 last_lines = lines_with_time[-lines_num:]
             else:
                 last_lines = lines_with_time
         return last_lines
 
     def read_latest_logs(self):
-        latest_logs = self.read_log_lines()[::-1]
+        latest_logs = self.read_log_lines(lines_num=5)[::-1]
         latest_logs_shorted = ['{}......'.format(line[0:255]) if len(line) > 255 else line for line in latest_logs]
         return latest_logs_shorted
 
