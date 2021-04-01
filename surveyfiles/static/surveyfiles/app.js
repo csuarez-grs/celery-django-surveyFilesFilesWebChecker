@@ -7,25 +7,27 @@ $(function () {
 
 function setColorClass(qc_passed, automation_status) {
 
-    if ((automation_status.indexOf('Not started') >= 0)) {
-        if (qc_passed.indexOf('Succeeded') >= 0) {
-            return 'succeeded';
-        } else if (qc_passed.indexOf('Failed') >= 0) {
-            return 'failed';
-        } else if (qc_passed.indexOf('Running') >= 0) {
-            return 'blinking';
+    if (qc_passed !== null) {
+        if ((automation_status === null)) {
+            if (qc_passed.indexOf('Succeeded') >= 0) {
+                return 'succeeded';
+            } else if (qc_passed.indexOf('Failed') >= 0) {
+                return 'failed';
+            } else if (qc_passed.indexOf('Running') >= 0) {
+                return 'blinking';
+            } else {
+                return 'new'
+            }
         } else {
-            return 'new'
-        }
-    } else {
-        if (automation_status.indexOf('Running') >= 0) {
-            return 'blinking';
-        } else if (automation_status.indexOf('Success') >= 0) {
-            return 'succeeded';
-        } else if (automation_status.indexOf('Failure') >= 0) {
-            return 'failed';
-        } else {
-            return null
+            if (automation_status.indexOf('Running') >= 0) {
+                return 'blinking';
+            } else if (automation_status.indexOf('Success') >= 0) {
+                return 'succeeded';
+            } else if (automation_status.indexOf('Failure') >= 0) {
+                return 'failed';
+            } else {
+                return null
+            }
         }
     }
 }
@@ -33,8 +35,10 @@ function setColorClass(qc_passed, automation_status) {
 function cardsColoring() {
 
     $("div.file-card").each(function () {
-        var qc_passed = $(this).find("p.qc-passed-text").text();
-        var automation_status = $(this).find("p.automation-status-text").text();
+        var qc_passed_ele = $(this).find("p.qc-passed-text");
+        var qc_passed = qc_passed_ele ? qc_passed_ele.text() : null
+        var automation_status_ele = $(this).find("p.automation-status-text");
+        var automation_status = automation_status_ele ? automation_status_ele.text() : null
 
         var colorClass = setColorClass(qc_passed, automation_status);
 
