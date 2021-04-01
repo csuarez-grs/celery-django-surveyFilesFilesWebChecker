@@ -65,7 +65,7 @@
             {% endif %}
             {% if object.automation_ended %}<p>Automation ended at {{ object.automation_ended }}</p>{% endif %}
             <div>
-                <label style="display: block">Last logs
+                <label style="display: block">Last logs - {{ object.get_log_link }}
                     <div class="log-area">{{ object.read_latest_logs | join:"<br />" }}</div>
                 </label>
             </div>

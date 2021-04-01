@@ -499,11 +499,14 @@ class SurveyFileAutomation(models.Model):
         file_paths = getattr(self, file_type, None)
 
         if file_paths:
-            file_list = [str(item).strip() for item in file_paths.split('; ')
-                         if os.path.isfile(str(item).strip())]
+            file_list = [str(item).strip() if os.path.isfile(str(item).strip())
+                         else '{} (Deleted)'.format(os.path.basename(str(item).strip()))
+                         for item in file_paths.split('; ')
+                         ]
 
             if len(file_list) > 0:
-                return format_html(' '.join(sorted([get_target_url(item) for item in file_list])))
+                return format_html('; '.join(sorted([get_target_url(item) if os.path.isfile(item) else item
+                                                    for item in file_list])))
 
         return None
 
