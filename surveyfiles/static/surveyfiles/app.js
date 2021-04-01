@@ -7,8 +7,7 @@ $(function () {
 
 function setColorClass(qc_passed, automation_status) {
 
-    if (qc_passed !== null) {
-        if ((automation_status === null)) {
+        if (qc_passed !== null &&  automation_status === null) {
             if (qc_passed.indexOf('Succeeded') >= 0) {
                 return 'succeeded';
             } else if (qc_passed.indexOf('Failed') >= 0) {
@@ -18,7 +17,7 @@ function setColorClass(qc_passed, automation_status) {
             } else {
                 return 'new'
             }
-        } else {
+        } else if (automation_status !== null ) {
             if (automation_status.indexOf('Running') >= 0) {
                 return 'blinking';
             } else if (automation_status.indexOf('Success') >= 0) {
@@ -29,7 +28,6 @@ function setColorClass(qc_passed, automation_status) {
                 return null
             }
         }
-    }
 }
 
 function cardsColoring() {
