@@ -105,7 +105,10 @@ function refreshtime() {
         + ":" + ("0" + dt.getSeconds()).slice(-2)
         + ' ' + dayofweek + ', ' + monthNames[dt.getMonth()] + ', ' + dt.getDate();
 
-    document.getElementById("refreshtime").innerHTML = greeting;
+    const refreshTimeEle = document.getElementById("refreshtime")
+    if (refreshTimeEle) {
+        refreshTimeEle.innerHTML = greeting;
+    }
 }
 
 function alerting() {
