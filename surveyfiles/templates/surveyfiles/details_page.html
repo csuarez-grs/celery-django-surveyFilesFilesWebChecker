@@ -16,9 +16,9 @@
         {% endif %}
         <p>Project: {{ object.utm_sr_name }} |
             Scale: {{ object.scale_value }}</p>
-    {% if 'Field Sketch PDF' in object.exporting_types_selected %}
-        Field Sketch PDF ({{ object.background_imagery|slice:"17:" }})
-    {% endif %}
+        {% if 'Field Sketch PDF' in object.exporting_types_selected %}
+            Field Sketch PDF ({{ object.background_imagery|slice:"17:" }})
+        {% endif %}
         {% if object.total_profiles %}
             <p>Total {{ object.total_profiles }} Profiles {{ object.total_profiles_meters|floatformat:0 }} Meters</p>
             <p>Total {{ object.total_points }} Points</p>
@@ -32,7 +32,7 @@
                     <div class="details-errors">
                         QC failed ({{ object.total_qc_time }}). {{ object.jxl_errors }}
                     </div>
-                    {% else %}
+                {% else %}
                     <div class="details-running">
                         QC Running
                     </div>
@@ -64,11 +64,13 @@
                 <p>Not started yet !</p>
             {% endif %}
             {% if object.automation_ended %}<p>Automation ended at {{ object.automation_ended }}</p>{% endif %}
-            <div>
-                <label style="display: block">Last logs - {{ object.get_log_link }}
-                    <div class="log-area">{{ object.read_latest_logs | join:"<br />" }}</div>
-                </label>
-            </div>
+            {% if object.get_log_link %}
+                <div>
+                    <label style="display: block">Last logs - {{ object.get_log_link }}
+                        <div class="log-area">{{ object.read_latest_logs | join:"<br />" }}</div>
+                    </label>
+                </div>
+            {% endif %}
             <div class="outputs-div">
                 <div>{% if object.wgs84_csv %}EXP: {{ object.get_wgs_84_csv_link }}{% endif %}</div>
                 <div>{% if object.exp_path %}EXP: {{ object.get_exp_links }}{% endif %}</div>
