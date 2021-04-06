@@ -72,23 +72,23 @@
                 </div>
             {% endif %}
             <div class="outputs-div">
-                {% if object.wgs84_csv %}
+                {% if object.get_wgs_84_csv_link %}
                     <div>WGS84 CSV: {{ object.get_wgs_84_csv_link }}</div>
                 {% endif %}
-                {% if object.exp_path %}
+                {% if object.get_exp_links %}
                     <div>EXP: {{ object.get_exp_links }}</div>
                 {% endif %}
-                {% if object.ald_csv_path %}
+                {% if object.get_ald_csv_links %}
                     <div>ALD CSV:
                         {{ object.get_ald_csv_links }}</div>
                 {% endif %}
-                {% if object.kmz_path %}
+                {% if object.get_kmz_link %}
                     <div>KMZ: {{ object.get_kmz_link }}</div>
                 {% endif %}
-                {% if object.unit_report_path %}
+                {% if object.get_unit_report_link %}
                     <div>UNIT REPORT: {{ object.get_unit_report_link }}</div>
                 {% endif %}
-                {% if object.field_sketch_pdf_path %}
+                {% if object.get_field_sketch_pdf_links %}
                     <div>Field Sketch PDF:
                         {{ object.get_field_sketch_pdf_links }}</div>
                 {% endif %}
