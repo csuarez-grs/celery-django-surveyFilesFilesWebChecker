@@ -265,12 +265,9 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                             extra={'username': self.request.user.username})
         job_no = self.object.job_no
         site_no = self.object.site_no
-        if not self.reference_object:
-            document_path = self.object.document.file.name
-            document_name = os.path.basename(document_path)
-        else:
-            document_path = None
-            document_name = None
+        document_path = self.object.document.file.name
+        document_name = os.path.basename(document_path)
+
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
 
         detail_url = self.request.build_absolute_uri(reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
