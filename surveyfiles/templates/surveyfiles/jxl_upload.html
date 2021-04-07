@@ -11,7 +11,7 @@
                     <h1 class="mt-2 page-title" style="margin: 0">Survey Files Checker</h1>
                     <span style="margin-left: 10px">
                         <a class="btn btn-warning small-button" style="margin: 0"
-                             href="{% url 'surveyfiles:jxl_cards_view' %}">Check Status</a>
+                           href="{% url 'surveyfiles:jxl_cards_view' %}">Check Status</a>
                     </span>
                 </div>
                 <p class="mt-2 notes">Please use standard name convention for JXL or CSV File: "20190603-19CF0231-SA".
@@ -27,10 +27,11 @@
                         </div>
                     {% endif %}
 
-                {% if reference_object %}
-                    <div class="details-success">Exporting data files from {{ reference_object.site_data_db }}
-                        ({{ reference_object.utm_sr_name }}|{{ reference_object.scale_value }})</div>
-                {% endif %}
+                    {% if reference_object %}
+                        <div class="details-success">Exporting data files from {{ reference_object.site_data_db }}
+                            ({{ reference_object.utm_sr_name }}|{{ reference_object.scale_value }})
+                        </div>
+                    {% endif %}
 
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
@@ -41,50 +42,21 @@
                                 (Back to Status Page)</a>
                         </div>
                     </form>
+                    {% if form.errors %}
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <div class="details-errors">
+                                    <strong>{{ error|escape }}</strong>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <div class="details-errors">
+                                <strong>{{ error|escape }}</strong>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
-
-
-                <!--<iframe name="hiddenFrame" class="hide"></iframe>-->
-                <!--<div class="table-title-2">JXL File Uploading</div>-->
-                <!--<div class="row">-->
-                <!--<div class="col" id="new-task-section">-->
-                <!--<form method="post" enctype="multipart/form-data">-->
-                <!--{% csrf_token %}-->
-                <!--{% for field in form %}-->
-                    <!--<div class="row">-->
-                    <!--<div class="col-md-3">-->
-                    <!--<div><label class="field-label">{{ field.label_tag }}</label></div>-->
-                    <!--<div class="field-errors">{{ field.errors }}</div>-->
-                    <!--</div>-->
-                    <!--<div class="col-md-9 field-text">-->
-                    <!--{% if field.help_text %}-->
-                        <!--{# <sup>{{ field.help_text }}</sup>#}-->
-                        <!--{{ field.help_text }}-->
-                        <!--{% endif %}-->
-                    <!--{{ field }}-->
-                    <!--</div>-->
-                    <!--</div>-->
-                    <!--{% endfor %}-->
-
-                <!--<div class="row">-->
-                <!--<div class="col-md-12" style="margin: 5px; text-align: left">-->
-                <!--<div class="buttons-area">-->
-                <!--<button type="submit" class="form-button form-button-submit">Upload</button>-->
-                <!--<a class="form-button form-button-cancel" href="{% url 'surveyfiles:jxl_list_view' %}">Cancel</a>-->
-                <!--</div>-->
-                <!--</div>-->
-                <!--</div>-->
-                <!--</form>-->
-
-                <!--<div class="alert-areas">-->
-                <!--{% if messages %}-->
-                    <!--{% for message in messages %}-->
-                        <!--{{ message }}-->
-                        <!--{% endfor %}-->
-                    <!--{% endif %}-->
-                <!--</div>-->
-                <!--</div>-->
-                <!--</div>-->
             </div>
         </div>
     </div>
