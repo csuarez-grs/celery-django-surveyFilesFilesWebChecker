@@ -16,8 +16,11 @@
         {% endif %}
         <p>Project: {{ object.utm_sr_name }} |
             Scale: {{ object.scale_value }}</p>
-        {% if 'Field Sketch PDF' in object.exporting_types_selected %}
-            Field Sketch PDF ({{ object.background_imagery|slice:"17:" }})
+        {% if object.exporting_types_selected %}
+            <p>Exporting: {{ object.exporting_types_selected|join:", " }}</p>
+            {% if 'Field Sketch PDF' in object.exporting_types_selected %}
+                <p>Field Sketch PDF ({{ object.background_imagery|slice:"17:" }})</p>
+            {% endif %}
         {% endif %}
         {% if object.total_profiles %}
             <p>Total {{ object.total_profiles }} Profiles {{ object.total_profiles_meters|floatformat:0 }} Meters</p>
