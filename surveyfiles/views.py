@@ -16,7 +16,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 
 from .filters import SurveyFileAutomationFilter
 from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm, DataExportForm
-from .models import SurveyFileAutomation, FORTIS_JOB_NO_PATTERN
+from .models import SurveyFileAutomation, FORTIS_JOB_NO_PATTERN, FortisJobExtents
 from .tables import SurveyFileAutomationTable
 from .tasks import *
 
@@ -132,9 +132,16 @@ class SurveyFileDetailView(DetailView):
     model = SurveyFileAutomation
     template_name = 'surveyfiles/details_page.html'
 
-    # def get_context_data(self, **kwargs):
-    #     context = super(SurveyFileDetailView, self).get_context_data(**kwargs)
-    #     return context
+    def get_context_data(self, **kwargs):
+        context = super(SurveyFileDetailView, self).get_context_data(**kwargs)
+        object = context.get('object')
+        try:
+            total_pages = FortisJobExtents.get_page_nums(object.job_no, object.site_no)
+            context['total_pages'] = total_pages
+        except Exception as e:
+            pages_errors = e
+            context['total_pages'] = pages_errors
+        return context
 
     # def get_form_kwargs(self):
     #     kwargs = super(SurveyFileDetailView, self).get_form_kwargs()

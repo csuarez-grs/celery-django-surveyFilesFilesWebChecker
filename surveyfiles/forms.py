@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_exporting_types_options, FORTIS_JOB_NO_PATTERN, field_sketch_pdf_type, unit_report_type
+    default_exporting_types_options, FORTIS_JOB_NO_PATTERN, FortisJobExtents, unit_report_type
 import field_sketch_pdf
 
 site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
@@ -44,7 +44,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         initial = kwargs.get('initial')
         if initial:
             self._use_reference = True
-            for field in ['document', 'extract_input_values', 'utm_sr_name', 'scale_value', 'create_gis_data', 'site_data_db']:
+            for field in ['document', 'extract_input_values', 'utm_sr_name', 'scale_value', 'create_gis_data',
+                          'site_data_db']:
                 self.fields[field].disabled = True
                 self.fields[field].widget = forms.HiddenInput()
         else:
@@ -65,6 +66,14 @@ class SurveyFileAutomationForm(forms.ModelForm):
         create_gis_data = bool(cleaned_data['create_gis_data'])
         site_data_db = cleaned_data['site_data_db']
         exporting_types_selected = cleaned_data['exporting_types_selected']
+        site_no = cleaned_data['site_no']
+        if re.search(FORTIS_JOB_NO_PATTERN, document.name):
+            job_no = re.search(FORTIS_JOB_NO_PATTERN, document.name).groups()[0]
+            sites = FortisJobExtents.get_sites(job_no)
+            if site_no not in sites:
+                self.add_error('site_no', 'Site {} is not set up in database yet ! Optional sites: {}'
+                               .format(site_no, ', '.join([str(site) for site in sites])))
+
         # print(document_name, type(document_name),
         #     extract_input_values, type(extract_input_values),
         #       utm_sr_name, type(utm_sr_name),

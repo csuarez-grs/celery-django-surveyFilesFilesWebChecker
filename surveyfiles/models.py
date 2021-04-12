@@ -375,7 +375,8 @@ class SurveyFileAutomation(models.Model):
         if self.log_path and os.path.isfile(self.log_path):
             try:
                 latest_logs = self.read_log_lines(lines_num=5)[::-1]
-                latest_logs_shorted = ['{}......'.format(line[0:255]) if len(line) > 255 else line for line in latest_logs]
+                latest_logs_shorted = ['{}......'.format(line[0:255]) if len(line) > 255 else line for line in
+                                       latest_logs]
                 return latest_logs_shorted
             except:
                 return None
@@ -512,7 +513,7 @@ class SurveyFileAutomation(models.Model):
 
             if len(file_list) > 0:
                 return format_html('; '.join(sorted([get_target_url(item) if os.path.isfile(item) else item
-                                                    for item in file_list])))
+                                                     for item in file_list])))
 
         return None
 
@@ -539,3 +540,28 @@ class SurveyFileAutomation(models.Model):
         if self.unit_report_path and os.path.isfile(self.unit_report_path):
             return get_target_url(self.unit_report_path)
         return None
+
+
+class FortisJobExtents(models.Model):
+    object_id = models.IntegerField(db_column='OBJECTID', primary_key=True)
+    job_no = models.CharField(db_column='Job_Number', max_length=8)
+    site_id = models.IntegerField(db_column='SiteID')
+    page_no = models.IntegerField(db_column='PageNo')
+
+    class Meta:
+        managed = False
+        db_table = 'vi_FortisFieldPageExtents'
+
+    @classmethod
+    def get_sites(cls, job_no):
+        return sorted(list(set([item.site_id for item in cls.objects.filter(job_no=job_no)])))
+
+    @classmethod
+    def get_page_nums(cls, job_no, site_id):
+        page_nums = sorted([item.page_no for item in cls.objects.filter(job_no=job_no).filter(site_id=site_id)])
+        duplicates = ['Page {}: {} duplicate records'.format(page_no, page_nums.count(page_no))
+                      for page_no in set(page_nums) if page_nums.count(page_no) > 1]
+        if duplicates:
+            error_info = 'Totally {} pages. Duplicates errors: {}'.format(len(page_nums), ', '.join(duplicates))
+            raise ValidationError(error_info)
+        return 'Totally {} pages'.format(len(page_nums))

@@ -8,7 +8,7 @@
 
 {% block content %}
     <div class="details-div">
-        <p><b>{{ object.document_name }}</b> uploaded
+        <p><b>{{ object.document_name }}</b> (Site {{ object.site_no }}) Uploaded
             by <b>{{ object.uploader|get_ldap_user_name }}</b>
             @ {{ object.uploaded_time }}</p>
         {% if object.get_field_folder_link %}
@@ -19,7 +19,7 @@
         {% if object.exporting_types_selected %}
             <p>Exporting: {{ object.exporting_types_selected|join:", " }}</p>
             {% if 'Field Sketch PDF' in object.exporting_types_selected %}
-                <p>Field Sketch PDF ({{ object.background_imagery|slice:"17:" }})</p>
+                <p>Field Sketch PDF ({{ object.background_imagery|slice:"17:" }}; {{ total_pages }})</p>
             {% endif %}
         {% endif %}
         {% if object.total_profiles %}

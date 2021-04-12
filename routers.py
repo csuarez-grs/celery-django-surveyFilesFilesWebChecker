@@ -51,8 +51,6 @@ class CoreRouter:
         if model._meta.app_label == 'core':
             if model._meta.db_table in ['vwGRSJobs', 'vwGRSLegalDescJob', 'vwEmployee', 'tblJobs']:
                 return 'latidatasql'
-            elif model._meta.db_table in ['vi_FortisFieldPageExtents']:
-                return 'fortis'
             else:
                 return None
 
@@ -94,8 +92,8 @@ class SurveyFilesRouter:
         Attempts to write auth models go to auth_db.
         """
         if model._meta.app_label == 'surveyfiles':
-            return 'default'
-
+            if model._meta.db_table != 'vi_FortisFieldPageExtents':
+                return 'default'
         return None
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
@@ -104,6 +102,9 @@ class SurveyFilesRouter:
         database.
         """
 
-        return True
+        if app_label == 'surveyfiles':
+            if model_name != 'FortisJobExtents':
+                return True
+        return False
 
 
