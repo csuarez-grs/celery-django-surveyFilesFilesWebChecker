@@ -2,7 +2,7 @@ from django import forms
 import re
 import os
 from django.utils.translation import gettext_lazy as _
-
+from django.core.exceptions import ValidationError
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
@@ -73,6 +73,11 @@ class SurveyFileAutomationForm(forms.ModelForm):
             if site_no not in sites:
                 self.add_error('site_no', 'Site {} is not set up in database yet ! Optional sites: {}'
                                .format(site_no, ', '.join([str(site) for site in sites])))
+
+            try:
+                FortisJobExtents.get_page_nums(job_no, site_no)
+            except ValidationError as e:
+                self.add_error('site_no', e)
 
         # print(document_name, type(document_name),
         #     extract_input_values, type(extract_input_values),

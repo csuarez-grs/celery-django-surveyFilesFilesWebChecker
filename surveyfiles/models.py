@@ -559,9 +559,11 @@ class FortisJobExtents(models.Model):
     @classmethod
     def get_page_nums(cls, job_no, site_id):
         page_nums = sorted([item.page_no for item in cls.objects.filter(job_no=job_no).filter(site_id=site_id)])
-        duplicates = ['Page {}: {} duplicate records'.format(page_no, page_nums.count(page_no))
+        duplicates = ['Page {} has {} duplicate records'.format(page_no, page_nums.count(page_no))
                       for page_no in set(page_nums) if page_nums.count(page_no) > 1]
         if duplicates:
-            error_info = 'Totally {} pages. Duplicates errors: {}'.format(len(page_nums), ', '.join(duplicates))
+            error_info = 'Totally {} job extents. Duplicates errors: {}. ' \
+                         'Please send update request to fortisrequests@GlobalRaymac.ca.' \
+                .format(len(page_nums), ', '.join(duplicates))
             raise ValidationError(error_info)
         return 'Totally {} pages'.format(len(page_nums))
