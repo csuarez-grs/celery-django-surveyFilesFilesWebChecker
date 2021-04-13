@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import re
 import time
 
+from django.core.exceptions import ValidationError
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, FormView, DetailView
@@ -138,9 +139,9 @@ class SurveyFileDetailView(DetailView):
         try:
             total_pages = FortisJobExtents.get_page_nums(object.job_no, object.site_no)
             context['total_pages'] = total_pages
-        except Exception as e:
+        except ValidationError as e:
             pages_errors = e
-            context['total_pages'] = pages_errors
+            context['total_pages'] = '; '.join(pages_errors)
         return context
 
     # def get_form_kwargs(self):
