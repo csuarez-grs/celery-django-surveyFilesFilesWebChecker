@@ -10,6 +10,7 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import models
+from django.utils.functional import cached_property
 
 from SurveyFilesWebChecker.settings import logger_model, TRACKING_TABLE_NAME, dev_test
 
@@ -338,11 +339,19 @@ class SurveyFileAutomation(models.Model):
     def __unicode__(self):
         return '{} - {} - {}'.format(self.uploaded_time, self.uploader, self.document.path)
 
-    @property
+    @cached_property
     def document_name(self):
         if self.document:
             return os.path.basename(self.document.name)
         return None
+
+    @cached_property
+    def total_pages(self):
+        try:
+            total_pages = FortisJobExtents.get_page_nums(self.job_no, self.site_no)
+        except ValidationError as e:
+            total_pages = '; '.join(e)
+        return total_pages
 
     @property
     def latest_log_time(self):

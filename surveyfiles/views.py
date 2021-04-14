@@ -133,22 +133,6 @@ class SurveyFileDetailView(DetailView):
     model = SurveyFileAutomation
     template_name = 'surveyfiles/details_page.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(SurveyFileDetailView, self).get_context_data(**kwargs)
-        object = context.get('object')
-        try:
-            total_pages = FortisJobExtents.get_page_nums(object.job_no, object.site_no)
-            context['total_pages'] = total_pages
-        except ValidationError as e:
-            pages_errors = e
-            context['total_pages'] = '; '.join(pages_errors)
-        return context
-
-    # def get_form_kwargs(self):
-    #     kwargs = super(SurveyFileDetailView, self).get_form_kwargs()
-    #     kwargs.update({'user': self.request.user})
-    #     return kwargs
-
 
 class SurveyFilesCardsFilterView(FilterView, PaginationMixin, ListView):
     model = SurveyFileAutomation
@@ -278,7 +262,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
 
         uploaded_time_str = self.object.uploaded_time.strftime('%Y-%m-%d %H:%M:%S')
 
-        detail_url = self.request.build_absolute_uri(reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
+        detail_url = self.request.build_absolute_uri(
+            reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
 
         kwargs = dict(username=self.request.user.username,
                       job_no=job_no,
@@ -544,7 +529,8 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
         surveyor_email = self.object.surveyor_email
         target_field_folder = self.object.target_field_folder
 
-        detail_url = self.request.build_absolute_uri(reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
+        detail_url = self.request.build_absolute_uri(
+            reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
 
         kwargs = dict(username=self.request.user.username,
                       job_no=job_no,
