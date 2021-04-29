@@ -48,7 +48,8 @@ def job_sketch_setup(job_no, selected_sites, background_imagery, user_name, log_
         js = field_sketch_pdf.JobSetUpFieldSketchPDF(job_no=job_no, selected_sites=selected_sites,
                                                      background_imagery=background_imagery,
                                                      job_folder=job_folder, user=user_name,
-                                                     overwriting=False, logger_objs=[None, log_path])
+                                                     overwriting=False, logger_objs=[None, log_path],
+                                                     kill_process_after=True)
         js.make_pdf()
 
 
@@ -67,7 +68,8 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
         overwriting=overwriting,
         logger_objs=[None, log_path],
         background_imagery=background_imagery,
-        automation_cc_emails=contact_emails
+        automation_cc_emails=contact_emails,
+        kill_process_after=True
     )
 
     w.automatic_processing()
@@ -167,7 +169,8 @@ def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, cre
                                                                     exporting_types=exporting_types,
                                                                     background_imagery=background_imagery,
                                                                     overwriting=overwriting,
-                                                                    uploading_info=uploading_info)
+                                                                    uploading_info=uploading_info,
+                                                                    kill_process_after=True)
 
         worker.automatic_processing()
 
@@ -213,7 +216,8 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
                                                                uploader=executor,
                                                                web_track_id=tracking_id,
                                                                overwriting=overwriting,
-                                                               testing=False
+                                                               testing=False,
+                                                               kill_process_after=True
                                                                )
 
     ppp_automation_worker.run()
