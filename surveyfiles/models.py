@@ -37,6 +37,44 @@ min_scale_value = 0.0
 max_scale_value = 1.5
 
 
+class PageNumsParser(object):
+    NUM_PATTERN = re.compile('^\d+$')
+    RANGE_PATTERN = re.compile('^(?P<start>\d+)\s*\-\s*(?P<stop>\d+)$')
+
+    def __init__(self, pages_str):
+        self._pages_str = pages_str
+        self._selected_pages_split = [str(item).strip() for item in self._pages_str.split(',')
+                                      if len(str(item).strip()) > 0]
+
+    def validate(self):
+        errors = []
+        for item in self._selected_pages_split:
+            if not (re.match(self.RANGE_PATTERN, item) or re.match(self.NUM_PATTERN, item)):
+                errors.append('Page num {} does not follow number format or range format (10-18)'.format(item))
+        if errors:
+            raise ValidationError('; '.join(errors))
+
+    def compile_nums_list(self):
+        selected_pages_list = []
+        for item in self._selected_pages_split:
+            if re.match(self.NUM_PATTERN, item):
+                page_no = int(item)
+                selected_pages_list.append(page_no)
+            elif re.match(self.RANGE_PATTERN, item):
+                groups = re.search(self.RANGE_PATTERN, item).groupdict()
+                pages_range_list = list(range(int(groups['start']), int(groups['stop'])+1))
+                selected_pages_list.extend(pages_range_list)
+            # else:
+            #     raise ValidationError('{} is not expected pattern !'.format(item))
+        selected_pages_list.sort()
+        return selected_pages_list
+
+
+def validate_pages_str(pages_str):
+    page_parser = PageNumsParser(pages_str)
+    page_parser.validate()
+
+
 def validate_site_data_db(site_data_db):
     if not os.path.isdir(site_data_db):
         raise ValidationError(
@@ -331,7 +369,8 @@ class SurveyFileAutomation(models.Model):
                                                    for item in field_sketch_pdf.IMAGERY_CHOICES),
                                           blank=True, null=True, default=field_sketch_pdf.VALTUS_IMAGERY)
     skip_empty_pages = models.BooleanField(db_column='Skip Empty Pages', default=False)
-    selected_pages = models.CharField(db_column='Selected Pages', max_length=100, null=True, blank=True)
+    selected_pages = models.CharField(db_column='Selected Pages', max_length=100, null=True, blank=True,
+                                      validators=[validate_pages_str])
 
     class Meta:
         managed = True
@@ -347,10 +386,10 @@ class SurveyFileAutomation(models.Model):
             return os.path.basename(self.document.name)
         return None
 
-    @cached_property
-    def total_pages(self):
+    @property
+    def total_pages_info(self):
         try:
-            total_pages = FortisJobExtents.get_page_nums(self.job_no, self.site_no)
+            total_pages = FortisJobExtents.get_page_nums(self.job_no, self.site_no)[0]
         except ValidationError as e:
             total_pages = '; '.join(e)
         return total_pages
@@ -577,4 +616,4 @@ class FortisJobExtents(models.Model):
                          'Please send update request to fortisrequests@GlobalRaymac.ca.' \
                 .format(len(page_nums), ', '.join(duplicates))
             raise ValidationError(error_info)
-        return 'Totally {} pages'.format(len(page_nums))
+        return 'Totally {} pages'.format(len(page_nums)), page_nums

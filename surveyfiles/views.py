@@ -225,6 +225,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                 'site_no': self.reference_object.site_no,
                 'exporting_types_selected': self.reference_object.exporting_types_selected,
                 'background_imagery': self.reference_object.background_imagery,
+                'selected_pages': self.reference_object.selected_pages,
+                'skip_empty_pages': self.reference_object.skip_empty_pages,
             })
         return initial
 
@@ -275,6 +277,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       scale_factor=self.object.scale_value,
                       exporting_types=self.object.exporting_types_selected,
                       background_imagery=self.object.background_imagery,
+                      skip_empty_pages=self.object.skip_empty_pages,
+                      selected_pages=self.object.selected_pages,
                       detail_url=detail_url,
                       )
         notify_uploading.si(**kwargs) \
@@ -317,12 +321,24 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         ]
 
         uploader = self.object.uploader
-        kwargs = dict(job_no=job_no, site_no=site_no, uploaded_file=document_path, uploader=uploader,
-                      tracking_id=tracking_id, create_gis_data=create_gis_data,
-                      site_data_db=self.site_data_db, utm_sr_name=utm_sr_name, scale_value=scale_value,
+        kwargs = dict(job_no=job_no,
+                      site_no=site_no,
+                      uploaded_file=document_path,
+                      uploader=uploader,
+                      tracking_id=tracking_id,
+                      create_gis_data=create_gis_data,
+                      site_data_db=self.site_data_db,
+                      utm_sr_name=utm_sr_name,
+                      scale_value=scale_value,
                       create_client_report=create_client_report,
-                      exporting_types=exporting_types, background_imagery=self.object.background_imagery,
-                      overwriting=overwriting, uploading_info=uploading_info)
+                      exporting_types=exporting_types,
+                      background_imagery=self.object.background_imagery,
+                      overwriting=overwriting,
+                      uploading_info=uploading_info,
+                      skip_empty_pages=self.object.skip_empty_pages,
+                      selected_pages=self.object.selected_pages,
+                      detail_url=detail_url,
+                      )
 
         quality_check_jxl_task = quality_check_jxl.si(**kwargs).set(queue=task_queue)
         quality_check_jxl_task.apply_async()

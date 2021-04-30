@@ -6,35 +6,29 @@ from django.core.exceptions import ValidationError
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
-    default_exporting_types_options, FORTIS_JOB_NO_PATTERN, FortisJobExtents, unit_report_type
+    default_exporting_types_options, FORTIS_JOB_NO_PATTERN, FortisJobExtents, unit_report_type, PageNumsParser
 import field_sketch_pdf
 
 site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
 
 
 class SurveyFileAutomationForm(forms.ModelForm):
-    # raise_invalid_errors = forms.BooleanField(initial=True, required=False,
-    #                                           label='Raise Invalid Profile Connection Errors')
     create_gis_data = forms.BooleanField(initial=True, required=False)
     site_data_db = forms.CharField(required=False)
-    # create_client_report = forms.BooleanField(initial=False, required=False)
-    # exporting_profile_no = forms.CharField(initial=default_all_profiles_str, required=False,
-    #                                        label='Leave it as it is, or type Exporting Profile No, e.g. 1, 2, 5')
     exporting_types_selected = forms.MultipleChoiceField(choices=exporting_types_options,
                                                          initial=tuple(default_exporting_types_options),
                                                          widget=forms.widgets.CheckboxSelectMultiple,
                                                          required=False)
 
-    # overwriting = forms.BooleanField(initial=True, required=True)
-
     class Meta:
         model = SurveyFileAutomation
         fields = ['document', 'site_no', 'extract_input_values',
                   'utm_sr_name', 'scale_value',
-                  # 'raise_invalid_errors',
                   'create_gis_data',
                   'site_data_db',
                   'exporting_types_selected',
+                  'skip_empty_pages',
+                  'selected_pages',
                   'background_imagery',
                   'overwriting']
 
@@ -52,6 +46,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
             self._use_reference = False
         self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = False
+        self.fields['skip_empty_pages'].required = False
+        self.fields['skip_empty_pages'].initial = True
         self.fields['overwriting'].required = False
         self.fields['overwriting'].initial = True
 
@@ -67,6 +63,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         site_data_db = cleaned_data['site_data_db']
         exporting_types_selected = cleaned_data['exporting_types_selected']
         site_no = cleaned_data['site_no']
+        selected_pages = cleaned_data['selected_pages']
+
         if re.search(FORTIS_JOB_NO_PATTERN, document.name):
             job_no = re.search(FORTIS_JOB_NO_PATTERN, document.name).groups()[0]
             sites = FortisJobExtents.get_sites(job_no)
@@ -75,16 +73,19 @@ class SurveyFileAutomationForm(forms.ModelForm):
                                .format(site_no, ', '.join([str(site) for site in sites])))
 
             try:
-                FortisJobExtents.get_page_nums(job_no, site_no)
+                all_pages_list = FortisJobExtents.get_page_nums(job_no, site_no)[1]
+
+                if selected_pages:
+                    pages_parser = PageNumsParser(selected_pages)
+                    selected_pages_list = pages_parser.compile_nums_list()
+                    incorrect_selected_pages = list(set(selected_pages_list) - set(all_pages_list))
+                    if incorrect_selected_pages:
+                        error = ValueError('{} not in site pages:\n{}'.format(incorrect_selected_pages,
+                                                                              all_pages_list))
+                        self.add_error('selected_pages', error)
+
             except ValidationError as e:
                 self.add_error('site_no', e)
-
-        # print(document_name, type(document_name),
-        #     extract_input_values, type(extract_input_values),
-        #       utm_sr_name, type(utm_sr_name),
-        #       scale_value, type(scale_value))
-
-        # logger_request.info('cleaned data: {}'.format(cleaned_data), extra={'username': self.user.username})
 
         if not site_data_db:
             if not create_gis_data and exporting_types_selected:
@@ -106,49 +107,6 @@ class SurveyFileAutomationForm(forms.ModelForm):
         logger_request.info('cleaning is done:\n{}'.format(cleaned_data), extra={'username': self.user.username})
 
         return cleaned_data
-
-    # def clean_utm_sr_name(self):
-    #     cleaned_data = self.cleaned_data
-    #     if cleaned_data.get('document'):
-    #         document = cleaned_data.get('document')
-    #         document_path = document.file.name
-    #         print('Reading from {}'.format(document_path))
-    #         utm_sr_name, scale_value = read_jxl_info(document_path, return_utm_name=True)
-    #         return utm_sr_name
-    #     return None
-    #
-    # def clean_document(self):
-    #     cleaned_data = self.cleaned_data
-    #     if cleaned_data.get('document'):
-    #         self.is_valid()
-
-    # def is_valid(self):
-    #     valid = super(JXLFileAutomationForm, self).is_valid()
-    #     if not valid:
-    #         return valid
-    #
-    #     cleaned_data = super(JXLFileAutomationForm, self).clean()
-    #     if cleaned_data['document']:
-    #         document = str(cleaned_data['document'])
-    #         print('Document: {}'.format(document))
-    #
-    #         if document[-4:].lower() == '.csv':
-    #             utm_sr_name = cleaned_data['utm_sr_name']
-    #             scale_value = cleaned_data['scale_value']
-    #             for item in [utm_sr_name, scale_value]:
-    #                 if not item:
-    #                     raise forms.ValidationError({'utm_sr_name': 'required for csv file',
-    #                                                  'scale_value': 'required for csv file'})
-
-    # def is_valid(self):
-    #     print('cleaned data: {}'.format(self.cleaned_data))
-    #     document = self.cleaned_data['document']
-    #     document_path = document.file.name
-    #     print('Reading {}'.format(document_path))
-    #     if os.path.isfile(document_path):
-    #         utm_sr_name, scale_value = read_jxl_info(document_path, return_utm_name=True)
-    #         self.cleaned_data['utm_sr_name'] = utm_sr_name
-    #         self.cleaned_data['scale_value'] = scale_value
 
     def save(self):
         logger_request.info('Start saving in form', extra={'username': self.user.username})
@@ -198,24 +156,6 @@ def validate_emails(text):
     any_errors = [item for item in items if not re.match(email_pattern, item)]
     if any_errors:
         raise forms.ValidationError('{} is not valid emails!'.format(', '.join(any_errors)))
-
-
-# class DetailsPageExportForm(forms.Form):
-#     exporting_types_selected = forms.MultipleChoiceField(choices=exporting_types_options,
-#                                                          initial=tuple(default_exporting_types_options),
-#                                                          widget=forms.widgets.CheckboxSelectMultiple,
-#                                                          required=False)
-#
-#     background_imagery = forms.ChoiceField(label='Background Imagery',
-#                                            choices=((item, item.split('\\')[1])
-#                                                     for item in field_sketch_pdf.IMAGERY_CHOICES),
-#                                            initial=field_sketch_pdf.VALTUS_IMAGERY)
-#
-#     contact_emails = forms.CharField(label='Contact Emails (Separated by "," or ";")', required=False, max_length=255,
-#                                      validators=[validate_emails])
-#
-#     def __init__(self, *args, **kwargs):
-#         super(DetailsPageExportForm, self).__init__(*args, **kwargs)
 
 
 class DataExportForm(forms.Form):

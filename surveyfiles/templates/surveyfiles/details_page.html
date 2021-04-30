@@ -19,7 +19,7 @@
         {% if object.exporting_types_selected %}
             <p>Exporting: {{ object.exporting_types_selected|join:", " }}</p>
             {% if 'Field Sketch PDF' in object.exporting_types_selected %}
-                <p>Field Sketch PDF ({{ object.background_imagery|slice:"17:" }}; {{ object.total_pages }})</p>
+                <p>Field Sketch PDF ({{ object.background_imagery|slice:"17:" }}; {{ object.total_pages_info }})</p>
             {% endif %}
         {% endif %}
         {% if object.total_profiles %}
