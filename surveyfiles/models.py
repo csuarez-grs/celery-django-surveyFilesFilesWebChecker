@@ -330,6 +330,8 @@ class SurveyFileAutomation(models.Model):
                                           choices=((item, item.split('\\')[1])
                                                    for item in field_sketch_pdf.IMAGERY_CHOICES),
                                           blank=True, null=True, default=field_sketch_pdf.VALTUS_IMAGERY)
+    skip_empty_pages = models.BooleanField(db_column='Skip Empty Pages', default=False)
+    selected_pages = models.CharField(db_column='Selected Pages', max_length=100, null=True, blank=True)
 
     class Meta:
         managed = True
