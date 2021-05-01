@@ -43,7 +43,7 @@ class PageNumsParser(object):
 
     def __init__(self, pages_str):
         self._pages_str = pages_str
-        self._selected_pages_split = [str(item).strip() for item in self._pages_str.split(',')
+        self._selected_pages_split = [str(item).strip() for item in re.split('[,;]', self._pages_str)
                                       if len(str(item).strip()) > 0]
 
     def validate(self):

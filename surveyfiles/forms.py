@@ -32,8 +32,9 @@ class SurveyFileAutomationForm(forms.ModelForm):
                   'background_imagery',
                   'overwriting']
         help_texts = {
-            'selected_pages': 'Please type page numbers separated by ", or use 5-10 for pages range".',
-            'skip_empty_pages': 'If checked, the program will skip the pages without your data.'
+            'selected_pages': 'Please type certain page numbers for field sketch pdf.'
+                              ' (Separated numbers by ",": 2,3,5. Or use pages range: 5-10).',
+            'skip_empty_pages': 'If checked, only field sketch pages with survey data is produced.'
         }
 
     def __init__(self, *args, **kwargs):
