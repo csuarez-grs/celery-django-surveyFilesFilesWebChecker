@@ -59,13 +59,18 @@ class PageNumsParser(object):
         for item in self._selected_pages_split:
             if re.match(self.NUM_PATTERN, item):
                 page_no = int(item)
-                selected_pages_list.append(page_no)
+                if page_no > 0:
+                    selected_pages_list.append(page_no)
+                else:
+                    raise ValidationError('{} is invalid page number !'.format(page_no))
             elif re.match(self.RANGE_PATTERN, item):
                 groups = re.search(self.RANGE_PATTERN, item).groupdict()
-                pages_range_list = list(range(int(groups['start']), int(groups['stop'])+1))
+                start_page, stop_page = int(groups['start']), int(groups['stop'])
+                if start_page >= stop_page:
+                    raise ValidationError('{} has start page >= stop page !'.format(item))
+                pages_range_list = list(range(start_page, stop_page + 1))
                 selected_pages_list.extend(pages_range_list)
-            # else:
-            #     raise ValidationError('{} is not expected pattern !'.format(item))
+
         selected_pages_list.sort()
         return selected_pages_list
 
