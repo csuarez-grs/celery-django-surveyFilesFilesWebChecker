@@ -17,7 +17,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 
 from .filters import SurveyFileAutomationFilter
 from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm, DataExportForm
-from .models import SurveyFileAutomation, FORTIS_JOB_NO_PATTERN, FortisJobExtents
+from .models import SurveyFileAutomation, FORTIS_JOB_NO_PATTERN, FortisJobExtents, PageNumsParser
 from .tables import SurveyFileAutomationTable
 from .tasks import *
 
@@ -267,6 +267,10 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         detail_url = self.request.build_absolute_uri(
             reverse('surveyfiles:details_view', kwargs={'pk': self.object.tracking_id}))
 
+        if self.object.selected_pages:
+            pages_parser = PageNumsParser(self.object.selected_pages)
+            selected_pages_list = pages_parser.compile_nums_list()
+
         kwargs = dict(username=self.request.user.username,
                       job_no=job_no,
                       uploaded_file=document_name,
@@ -278,7 +282,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       exporting_types=self.object.exporting_types_selected,
                       background_imagery=self.object.background_imagery,
                       skip_empty_pages=self.object.skip_empty_pages,
-                      selected_pages=self.object.selected_pages,
+                      selected_pages=selected_pages_list,
                       detail_url=detail_url,
                       )
         notify_uploading.si(**kwargs) \
@@ -336,7 +340,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       overwriting=overwriting,
                       uploading_info=uploading_info,
                       skip_empty_pages=self.object.skip_empty_pages,
-                      selected_pages=self.object.selected_pages,
+                      selected_pages=selected_pages_list,
                       detail_url=detail_url,
                       )
 
