@@ -55,6 +55,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
         self.fields['skip_empty_pages'].initial = True
         self.fields['overwriting'].required = False
         self.fields['overwriting'].initial = True
+        self.fields['selected_pages'].widget.attrs['placeholder'] = '...2, 3, 9, 11-18...'
 
     def clean(self):
         cleaned_data = self.cleaned_data
