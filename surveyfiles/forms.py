@@ -31,6 +31,10 @@ class SurveyFileAutomationForm(forms.ModelForm):
                   'selected_pages',
                   'background_imagery',
                   'overwriting']
+        help_texts = {
+            'selected_pages': 'Please type page numbers separated by ", or use 5-10 for pages range".',
+            'skip_empty_pages': 'If checked, the program will skip the pages without your data.'
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
@@ -103,6 +107,10 @@ class SurveyFileAutomationForm(forms.ModelForm):
                     self.add_error('utm_sr_name', 'Please select UTM name')
                 if scale_value is None:
                     self.add_error('scale_value', 'Please type scale factor')
+
+        if site_data_db and not os.path.isdir(str(site_data_db)):
+            error = '{} does not exist !'.format(site_data_db)
+            raise forms.ValidationError(error)
 
         logger_request.info('cleaning is done:\n{}'.format(cleaned_data), extra={'username': self.user.username})
 

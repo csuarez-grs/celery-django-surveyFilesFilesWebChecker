@@ -296,6 +296,7 @@ select {
     font-size: large;
     padding: 0.2em;
     margin: 0.2em 0;
+    word-wrap: break-word;
 }
 
 .help-block {

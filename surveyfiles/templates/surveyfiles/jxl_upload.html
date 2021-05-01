@@ -37,11 +37,11 @@
                             ({{ reference_object.utm_sr_name }}|{{ reference_object.scale_value }})
                         </div>
                     {% endif %}
-                    {% for error in form.non_field_errors %}
-                        <div class="details-errors">
-                            <strong>{{ error|escape }}</strong>
-                        </div>
-                    {% endfor %}
+{#                    {% for error in form.non_field_errors %}#}
+{#                        <div class="details-errors">#}
+{#                            <strong>{{ error|escape }}</strong>#}
+{#                        </div>#}
+{#                    {% endfor %}#}
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form|crispy }}

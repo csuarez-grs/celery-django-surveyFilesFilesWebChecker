@@ -19,7 +19,15 @@
         {% if object.exporting_types_selected %}
             <p>Exporting: {{ object.exporting_types_selected|join:", " }}</p>
             {% if 'Field Sketch PDF' in object.exporting_types_selected %}
-                <p>Field Sketch PDF ({{ object.background_imagery|slice:"17:" }}; {{ object.total_pages_info }})</p>
+                <p>Field Sketch Pages ({{ object.background_imagery|slice:"17:" }}. {{ object.total_pages_info }}.
+                    {% if object.selected_pages %}
+                        Only exporting {{ object.selected_pages }} !
+                    {% else %}
+                        {% if object.skip_empty_pages %}
+                            Will skip pages without survey data !
+                        {% endif %}
+                    {% endif %}
+                </p>
             {% endif %}
         {% endif %}
         {% if object.total_profiles %}
