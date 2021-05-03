@@ -23,7 +23,7 @@ from .tasks import *
 
 from SurveyFilesWebChecker.settings import logger_request, task_queue
 from django.core.mail import send_mail
-from SurveyFilesWebChecker.settings import EMAIL_HOST_USER, dev_test
+from SurveyFilesWebChecker.settings import EMAIL_HOST_USER, dev_test, ALLOW_WORKER_OFFLINE
 
 
 class JobSetUpView(SuccessMessageMixin, FormView):
@@ -101,7 +101,7 @@ class JobSetUpView(SuccessMessageMixin, FormView):
 
         worker_status, worker_count = get_worker_status(self, extra)
 
-        if worker_count == 0:
+        if worker_count == 0 and not ALLOW_WORKER_OFFLINE:
             self.template_name = 'surveyfiles/errors_page.html'
             context['errors'] = '<p>No any task worker is running !</p>' \
                                 '<p>Please contact GIS to check the status !</p>'
@@ -363,7 +363,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
 
         worker_status, worker_count = get_worker_status(self, extra)
 
-        if worker_count == 0:
+        if worker_count == 0 and not ALLOW_WORKER_OFFLINE:
             self.template_name = 'surveyfiles/errors_page.html'
             context['errors'] = '<p>No any task worker is running !</p>' \
                                 '<p>Please contact GIS to check the status !</p>'
@@ -485,7 +485,7 @@ class DataExportView(SuccessMessageMixin, FormView):
 
         worker_status, worker_count = get_worker_status(self, extra)
 
-        if worker_count == 0:
+        if worker_count == 0 and not ALLOW_WORKER_OFFLINE:
             self.template_name = 'surveyfiles/errors_page.html'
             context['errors'] = '<p>No any task worker is running !</p>' \
                                 '<p>Please contact GIS to check the status !</p>'
@@ -614,7 +614,7 @@ class CreatePPPFileAutomationView(SuccessMessageMixin, CreateView):
 
         worker_status, worker_count = get_worker_status(self, extra)
 
-        if worker_count == 0:
+        if worker_count == 0 and not ALLOW_WORKER_OFFLINE:
             self.template_name = 'surveyfiles/errors_page.html'
             context['errors'] = '<p>No any task worker is running !</p>' \
                                 '<p>Please contact GIS to check the status !</p>'

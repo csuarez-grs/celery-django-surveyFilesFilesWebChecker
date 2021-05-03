@@ -37,6 +37,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS')
+ALLOW_WORKER_OFFLINE = config('ALLOW_WORKER_OFFLINE', False)
 
 # Application definition
 
