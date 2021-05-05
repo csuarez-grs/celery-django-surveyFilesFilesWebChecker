@@ -13,8 +13,8 @@ site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
 
 
 class SurveyFileAutomationForm(forms.ModelForm):
-    create_gis_data = forms.BooleanField(initial=True, required=False)
-    site_data_db = forms.CharField(required=False)
+    # create_gis_data = forms.BooleanField(initial=True, required=False)
+    # site_data_db = forms.CharField(required=False)
     exporting_types_selected = forms.MultipleChoiceField(choices=exporting_types_options,
                                                          initial=tuple(default_exporting_types_options),
                                                          widget=forms.widgets.CheckboxSelectMultiple,
@@ -40,15 +40,18 @@ class SurveyFileAutomationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(SurveyFileAutomationForm, self).__init__(*args, **kwargs)
+        hidden_fields = ['create_gis_data', 'site_data_db']
         initial = kwargs.get('initial')
         if initial:
             self._use_reference = True
-            for field in ['document', 'extract_input_values', 'utm_sr_name', 'scale_value', 'create_gis_data',
-                          'site_data_db']:
-                self.fields[field].disabled = True
-                self.fields[field].widget = forms.HiddenInput()
+            hidden_fields += ['document', 'extract_input_values', 'utm_sr_name', 'scale_value']
         else:
             self._use_reference = False
+
+        for field in hidden_fields:
+                self.fields[field].disabled = True
+                self.fields[field].widget = forms.HiddenInput()
+
         self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = False
         self.fields['skip_empty_pages'].required = False
@@ -65,8 +68,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         extract_input_values = cleaned_data['extract_input_values']
         utm_sr_name = cleaned_data['utm_sr_name']
         scale_value = cleaned_data['scale_value']
-        create_gis_data = bool(cleaned_data['create_gis_data'])
-        site_data_db = cleaned_data['site_data_db']
+        # create_gis_data = bool(cleaned_data['create_gis_data'])
+        # site_data_db = cleaned_data['site_data_db']
         exporting_types_selected = cleaned_data['exporting_types_selected']
         site_no = cleaned_data['site_no']
         selected_pages = cleaned_data['selected_pages']
@@ -93,13 +96,6 @@ class SurveyFileAutomationForm(forms.ModelForm):
             except ValidationError as e:
                 self.add_error('site_no', e)
 
-        if not site_data_db:
-            if not create_gis_data and exporting_types_selected:
-                self.add_error('create_gis_data', 'Please select "create_gis_data" if exporting any data files !')
-            else:
-                if self.has_error('create_gis_data'):
-                    del self._errors['create_gis_data']
-
         if not self._use_reference and document:
             document_name = document.name
             if (document_name[-4:].lower() == '.jxl' and not extract_input_values) \
@@ -109,10 +105,6 @@ class SurveyFileAutomationForm(forms.ModelForm):
                     self.add_error('utm_sr_name', 'Please select UTM name')
                 if scale_value is None:
                     self.add_error('scale_value', 'Please type scale factor')
-
-        if site_data_db and not os.path.isdir(str(site_data_db)):
-            error = '{} does not exist !'.format(site_data_db)
-            raise forms.ValidationError(error)
 
         logger_request.info('cleaning is done:\n{}'.format(cleaned_data), extra={'username': self.user.username})
 
@@ -144,6 +136,11 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
         exporting_types = [item.strip() for item in new_jxl_obj.exporting_types_selected
                            if len(item.strip()) > 0]
+
+        if new_jxl_obj.site_data_db:
+            new_jxl_obj.create_gis_data = False
+        else:
+            new_jxl_obj.create_gis_data = True
 
         if len(exporting_types) > 0:
             new_jxl_obj.create_client_report = True

@@ -22,11 +22,11 @@
                         </div>
                     {% endif %}
 
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data" onsubmit="return disableSubmitButton(this);">
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="buttons">
-                            <button type="submit" class="btn btn-success small-button">Submit</button>
+                            <button type="submit" class="btn btn-success small-button" name="uploadButton">Submit</button>
                         </div>
                     </form>
                 </div>

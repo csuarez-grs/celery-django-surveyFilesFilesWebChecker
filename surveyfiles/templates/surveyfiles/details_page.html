@@ -16,6 +16,13 @@
         {% endif %}
         <p>Project: {{ object.utm_sr_name }} |
             Scale: {{ object.scale_value }}</p>
+        {% if object.site_data_db %}
+            {% if not object.create_gis_data %}
+                <p>Exporting from {{ object.site_data_db }}</p>
+            {% else %}
+                <p>GIS datasets created: {{ object.site_data_db }}</p>
+            {% endif %}
+        {% endif %}
         {% if object.exporting_types_selected %}
             <p>Exporting: {{ object.exporting_types_selected|join:", " }}</p>
             {% if 'Field Sketch PDF' in object.exporting_types_selected %}

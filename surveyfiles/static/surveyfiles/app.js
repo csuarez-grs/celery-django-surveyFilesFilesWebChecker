@@ -150,3 +150,12 @@ $(document).ready(function () {
     })
 
 });
+
+function disableSubmitButton(form) // Submit button clicked
+{
+    const buttonText = form.uploadButton.innerHTML
+    form.uploadButton.disabled = true;
+    form.uploadButton.innerHTML = buttonText + "...";
+    return true;
+}
+

@@ -27,11 +27,11 @@
                         </div>
                     {% endif %}
 
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data" onsubmit="return disableSubmitButton(this);">
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="buttons">
-                            <button type="submit" class="btn btn-success small-button">Upload</button>
+                            <button type="submit" class="btn btn-success small-button" name="uploadButton">Upload</button>
                             <a class="btn btn-warning small-button"
                                href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel (Back to Status Page)</a>
                         </div>

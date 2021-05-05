@@ -3,6 +3,7 @@
 
 {% block title %}Survey Files Checker{% endblock %}
 
+
 {% block content %}
     <div class="container">
         <div class="row justify-content-center">
@@ -20,7 +21,8 @@
                 <p class="mt-2 notes blinking" style="background-color: darkred; padding: 5px">
                     <a style="text-decoration: none; color: whitesmoke"
                        href="mailto:fortisrequests@GlobalRaymac.ca?subject=Update Request for Job Page Extents">
-                        Please contact fortisrequests@GlobalRaymac.ca for any update of job page extents in field sketch pdf.</a>
+                        Please contact fortisrequests@GlobalRaymac.ca for any update of job page extents in field sketch
+                        pdf.</a>
                 </p>
                 <hr class="mt-0 mb-4">
                 <div>
@@ -37,16 +39,17 @@
                             ({{ reference_object.utm_sr_name }}|{{ reference_object.scale_value }})
                         </div>
                     {% endif %}
-{#                    {% for error in form.non_field_errors %}#}
-{#                        <div class="details-errors">#}
-{#                            <strong>{{ error|escape }}</strong>#}
-{#                        </div>#}
-{#                    {% endfor %}#}
-                    <form method="post" enctype="multipart/form-data">
+                    {#                    {% for error in form.non_field_errors %}#}
+                    {#                        <div class="details-errors">#}
+                    {#                            <strong>{{ error|escape }}</strong>#}
+                    {#                        </div>#}
+                    {#                    {% endfor %}#}
+                    <form method="post" enctype="multipart/form-data" onsubmit="return disableSubmitButton(this);">
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="buttons">
-                            <button type="submit" class="btn btn-success small-button">Upload</button>
+                            <button type="submit" class="btn btn-success small-button" name="uploadButton">Upload
+                            </button>
                             <a class="btn btn-warning small-button" href="{% url 'surveyfiles:jxl_cards_view' %}">Cancel
                                 (Back to Status Page)</a>
                         </div>

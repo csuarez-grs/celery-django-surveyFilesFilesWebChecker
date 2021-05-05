@@ -397,6 +397,7 @@ select {
     color: darkslateblue;
     font-size: 20px;
     /*font-weight: bold;*/
+    word-wrap: break-word;
 }
 
 .details-errors {
