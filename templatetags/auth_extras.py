@@ -1,7 +1,9 @@
 import os
 
+from celery.result import AsyncResult
 from django import template
 from django.contrib.auth.models import Group
+from django.core.cache import cache
 
 from users.models import LDAPUser
 
@@ -63,3 +65,13 @@ def get_ldap_user_name(user_id):
         return '%s %s' % (ldap_user.first_name.title(), ldap_user.last_name.title())
     else:
         return user_id
+
+
+@register.filter('get_celery_task_status')
+def get_celery_task_status(object_id):
+    try:
+        task_id = cache.get('{}_CELERY_TASK'.format(object_id))
+        task_result = AsyncResult(task_id)
+        return task_result.status, task_id
+    except:
+        return 'Unknown'

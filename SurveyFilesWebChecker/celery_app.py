@@ -11,6 +11,12 @@ app = Celery('SurveyFilesWebChecker')
 # pickle the object when using Windows.
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+app.conf.update(
+    CELERY_RESULT_PERSISTENT=True,
+    CELERY_TASK_RESULT_EXPIRES=None,
+    CELERY_IGNORE_RESULT=False,
+    CELERY_TRACK_STARTED=True,
+)
 
 
 @app.task(bind=True)

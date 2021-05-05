@@ -1,5 +1,5 @@
 import sys
-from SurveyFilesWebChecker.settings import automation_folder, sub_working_folder
+from SurveyFilesWebChecker.settings import automation_folder, sub_working_folder, KILL_PROCESS_AFTER
 
 if automation_folder not in sys.path:
     sys.path.append(automation_folder)
@@ -49,7 +49,7 @@ def job_sketch_setup(job_no, selected_sites, background_imagery, user_name, log_
                                                      background_imagery=background_imagery,
                                                      job_folder=job_folder, user=user_name,
                                                      overwriting=False, logger_objs=[None, log_path],
-                                                     kill_process_after=True)
+                                                     kill_process_after=KILL_PROCESS_AFTER)
         js.make_pdf()
 
 
@@ -69,7 +69,7 @@ def data_export(job_no, site_no, site_db_path, uploaded_file, exporting_types, b
         logger_objs=[None, log_path],
         background_imagery=background_imagery,
         automation_cc_emails=contact_emails,
-        kill_process_after=True
+        kill_process_after=KILL_PROCESS_AFTER
     )
 
     w.automatic_processing()
@@ -173,7 +173,8 @@ def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, cre
                                                                     selected_pages=selected_pages,
                                                                     overwriting=overwriting,
                                                                     uploading_info=uploading_info,
-                                                                    kill_process_after=True)
+                                                                    kill_process_after=KILL_PROCESS_AFTER,
+                                                                    web_detail_url=detail_url)
 
         worker.automatic_processing()
 
@@ -220,7 +221,7 @@ def ppp_automation_task(job_no, site_no, uploaded_file, uploading_info, scale_va
                                                                web_track_id=tracking_id,
                                                                overwriting=overwriting,
                                                                testing=False,
-                                                               kill_process_after=True
+                                                               kill_process_after=KILL_PROCESS_AFTER
                                                                )
 
     ppp_automation_worker.run()

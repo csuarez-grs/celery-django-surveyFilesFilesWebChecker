@@ -37,7 +37,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS')
-ALLOW_WORKER_OFFLINE = config('ALLOW_WORKER_OFFLINE', False)
+ALLOW_WORKER_OFFLINE = config('ALLOW_WORKER_OFFLINE', default=False, cast=bool)
 
 # Application definition
 
@@ -403,7 +403,8 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_IGNORE_RESULT = True
+CELERY_IGNORE_RESULT = False
+CELERY_TRACK_STARTED = True
 
 from kombu import Exchange, Queue
 
@@ -426,4 +427,19 @@ from decouple import config
 
 web_title = config('WEBTITLE')
 sub_working_folder = config('sub_working_folder')
-dev_test = config('dev_test', False)
+dev_test = config('dev_test', default=False, cast=bool)
+
+CACHES = {
+    # 'default': {
+    #     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    # },
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": BROKER_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+KILL_PROCESS_AFTER = config('KILL_PROCESS_AFTER', default=False, cast=bool)

@@ -68,6 +68,7 @@
                     Automation: {{ object.automation_status }}
                 </p>
             {% endif %}
+            <p>Celery task status {{ object.tracking_id|get_celery_task_status }}</p>
 
             {% if object.automation_started %}
                 <p>Automation started at {{ object.automation_started }} ({{ object.total_automation_time }})</p>

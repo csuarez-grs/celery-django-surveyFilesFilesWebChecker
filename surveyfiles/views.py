@@ -14,6 +14,7 @@ from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from pure_pagination.mixins import PaginationMixin
 from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.core.cache import cache
 
 from .filters import SurveyFileAutomationFilter
 from .forms import SurveyFileAutomationForm, PPPFileAutomationForm, JobSetUpForm, DataExportForm
@@ -270,6 +271,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
         if self.object.selected_pages:
             pages_parser = PageNumsParser(self.object.selected_pages)
             selected_pages_list = pages_parser.compile_nums_list()
+        else:
+            selected_pages_list = None
 
         kwargs = dict(username=self.request.user.username,
                       job_no=job_no,
@@ -345,7 +348,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       )
 
         quality_check_jxl_task = quality_check_jxl.si(**kwargs).set(queue=task_queue)
-        quality_check_jxl_task.apply_async()
+        celery_task = quality_check_jxl_task.apply_async()
+        cache.set('{}_CELERY_TASK'.format(self.object.tracking_id), celery_task.id)
 
         return self.success_message % dict(
             cleaned_data,
