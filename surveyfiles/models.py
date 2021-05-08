@@ -374,6 +374,7 @@ class SurveyFileAutomation(models.Model):
                                                    for item in field_sketch_pdf.IMAGERY_CHOICES),
                                           blank=True, null=True, default=field_sketch_pdf.VALTUS_IMAGERY)
     skip_empty_pages = models.BooleanField(db_column='Skip Empty Pages', default=False)
+    include_overview_page = models.BooleanField(db_column='Include Overview Page', default=True)
     selected_pages = models.CharField(db_column='Selected Pages', max_length=100, null=True, blank=True,
                                       validators=[validate_pages_str])
 

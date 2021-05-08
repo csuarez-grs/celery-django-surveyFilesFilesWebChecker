@@ -142,7 +142,7 @@ def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, cre
                       site_data_db, utm_sr_name, scale_value,
                       create_client_report,
                       exporting_types, background_imagery, overwriting, uploading_info,
-                      skip_empty_pages, selected_pages, detail_url):
+                      skip_empty_pages, include_overview_page, selected_pages, detail_url):
     if not site_data_db:
         logger_request.info('QC Check {}'.format(uploaded_file))
         qc_worker = fortis_web_automation.FortisJXLWebAutomationWorker(job_no=job_no, site_no=site_no,
@@ -170,6 +170,7 @@ def quality_check_jxl(job_no, site_no, uploaded_file, uploader, tracking_id, cre
                                                                     exporting_types=exporting_types,
                                                                     background_imagery=background_imagery,
                                                                     skip_empty_pages=skip_empty_pages,
+                                                                    include_overview=include_overview_page,
                                                                     selected_pages=selected_pages,
                                                                     overwriting=overwriting,
                                                                     uploading_info=uploading_info,

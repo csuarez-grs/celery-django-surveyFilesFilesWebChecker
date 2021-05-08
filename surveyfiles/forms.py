@@ -28,12 +28,14 @@ class SurveyFileAutomationForm(forms.ModelForm):
                   'site_data_db',
                   'exporting_types_selected',
                   'skip_empty_pages',
+                  'include_overview_page',
                   'selected_pages',
                   'background_imagery',
                   'overwriting']
         help_texts = {
             'selected_pages': 'Please type certain page numbers for field sketch pdf.'
                               ' (Separated numbers by ",": 2,3,5. Or use pages range: 5-10).',
+            'include_overview_page': 'Include Field Sketch Overview Page',
             'skip_empty_pages': 'If checked, only field sketch pages with survey data is produced.'
         }
 
@@ -56,6 +58,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         self.fields['extract_input_values'].initial = False
         self.fields['skip_empty_pages'].required = False
         self.fields['skip_empty_pages'].initial = True
+        self.fields['include_overview_page'].required = False
+        self.fields['include_overview_page'].initial = True
         self.fields['overwriting'].required = False
         self.fields['overwriting'].initial = True
         self.fields['selected_pages'].widget.attrs['placeholder'] = '...2, 3, 9, 11-18...'

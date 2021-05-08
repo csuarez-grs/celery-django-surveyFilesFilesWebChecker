@@ -228,6 +228,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                 'background_imagery': self.reference_object.background_imagery,
                 'selected_pages': self.reference_object.selected_pages,
                 'skip_empty_pages': self.reference_object.skip_empty_pages,
+                'include_overview_page': self.reference_object.include_overview_page,
             })
         return initial
 
@@ -285,6 +286,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       exporting_types=self.object.exporting_types_selected,
                       background_imagery=self.object.background_imagery,
                       skip_empty_pages=self.object.skip_empty_pages,
+                      include_overview_page=self.object.include_overview_page,
                       selected_pages=selected_pages_list,
                       detail_url=detail_url,
                       )
@@ -343,6 +345,7 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                       overwriting=overwriting,
                       uploading_info=uploading_info,
                       skip_empty_pages=self.object.skip_empty_pages,
+                      include_overview_page=self.object.include_overview_page,
                       selected_pages=selected_pages_list,
                       detail_url=detail_url,
                       )
