@@ -1,13 +1,15 @@
-from django import forms
-import re
 import os
-from django.utils.translation import gettext_lazy as _
+import re
+
+from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+import field_sketch_pdf
 from SurveyFilesWebChecker.settings import logger_request
 from new_fortis_tools_20190625 import read_jxl_info
 from .models import SurveyFileAutomation, validate_jxl_pattern, exporting_types_options, \
     default_exporting_types_options, FORTIS_JOB_NO_PATTERN, FortisJobExtents, unit_report_type, PageNumsParser
-import field_sketch_pdf
 
 site_no_pattern = re.compile('Site_(\d+)\.gdb', re.IGNORECASE)
 
@@ -51,8 +53,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
             self._use_reference = False
 
         for field in hidden_fields:
-                self.fields[field].disabled = True
-                self.fields[field].widget = forms.HiddenInput()
+            self.fields[field].disabled = True
+            self.fields[field].widget = forms.HiddenInput()
 
         self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = False
@@ -90,6 +92,7 @@ class SurveyFileAutomationForm(forms.ModelForm):
 
                 if selected_pages:
                     pages_parser = PageNumsParser(selected_pages)
+                    pages_parser.validate()
                     selected_pages_list = pages_parser.compile_nums_list()
                     incorrect_selected_pages = list(set(selected_pages_list) - set(all_pages_list))
                     if incorrect_selected_pages:
