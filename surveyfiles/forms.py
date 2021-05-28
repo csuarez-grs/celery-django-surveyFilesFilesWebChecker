@@ -59,7 +59,8 @@ class SurveyFileAutomationForm(forms.ModelForm):
         self.fields['extract_input_values'].required = False
         self.fields['extract_input_values'].initial = False
         self.fields['skip_empty_pages'].required = False
-        self.fields['skip_empty_pages'].initial = True
+        self.fields['skip_empty_pages'].disabled = True
+        self.fields['skip_empty_pages'].initial = False
         self.fields['include_overview_page'].required = False
         self.fields['include_overview_page'].initial = True
         self.fields['overwriting'].required = False
