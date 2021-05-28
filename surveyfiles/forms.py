@@ -38,7 +38,10 @@ class SurveyFileAutomationForm(forms.ModelForm):
             'selected_pages': 'Please type certain page numbers for field sketch pdf.'
                               ' (Separated numbers by ",": 2,3,5. Or use pages range: 5-10).',
             'include_overview_page': 'Include Field Sketch Overview Page',
-            'skip_empty_pages': 'If checked, only field sketch pages with survey data is produced.'
+            'skip_empty_pages': 'This automatic function is not working now !'
+                                'Please try to type selected pages if there are many empty pages'
+                                ' in your work scope to save exporting time !'
+            # 'skip_empty_pages': 'If checked, only field sketch pages with survey data is produced.'
         }
 
     def __init__(self, *args, **kwargs):
