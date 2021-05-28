@@ -227,7 +227,8 @@ class CreateSurveyFileAutomationView(SuccessMessageMixin, CreateView):
                 'exporting_types_selected': self.reference_object.exporting_types_selected,
                 'background_imagery': self.reference_object.background_imagery,
                 'selected_pages': self.reference_object.selected_pages,
-                'skip_empty_pages': self.reference_object.skip_empty_pages,
+                # 'skip_empty_pages': self.reference_object.skip_empty_pages,
+                'skip_empty_pages': False,
                 'include_overview_page': self.reference_object.include_overview_page,
             })
         return initial
