@@ -244,7 +244,7 @@ class DataExportForm(forms.Form):
                     _('No "Site_xx" found in geodatabase name')
                 )
 
-            site_db_path = site_db_path.replace('R:', r'\\grs.com\DFS\JOBS')
+            site_db_path = site_db_path.replace('R:', r'\\grs-yyc-azuresync1\Public')
             self.cleaned_data['site_db_path'] = site_db_path
 
         if site_db_path is not None and os.path.isdir(site_db_path) and source_jxl_path is not None \
@@ -307,7 +307,7 @@ class PPPFileAutomationForm(forms.ModelForm):
                 )
 
         if target_field_folder is not None:
-            target_field_folder = target_field_folder.replace('R:', r'\\grs.com\DFS\JOBS')
+            target_field_folder = target_field_folder.replace('R:', r'\\grs-yyc-azuresync1\Public')
             self.cleaned_data['target_field_folder'] = target_field_folder
 
         logger_request.info('document name: {}'.format(document_name), extra={'username': self.user.username})

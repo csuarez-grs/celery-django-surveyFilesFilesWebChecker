@@ -304,7 +304,7 @@ class SurveyFileAutomation(models.Model):
                                     validators=[validate_site_data_db],
                                     help_text=r'Paste one valid site db to skip "create gis data"'
                                               ' if you already have GIS data created'
-                                              r' (\\grs.com\DFS\GIS\GIS_Working\JXL_Web_Job_Root\Dev\jxue'
+                                              r' (\\grs-yyc-fs03\gis\GIS_Working\JXL_Web_Job_Root\Dev\jxue'
                                               r'\20MF0041\CADD\Mapping\01_Data\Site_1\20MF0041_Site_1.gdb)')
     create_gis_data = models.BooleanField(db_column='Create GIS datasets',
                                           verbose_name='Create GIS datasets',
@@ -355,7 +355,7 @@ class SurveyFileAutomation(models.Model):
     target_field_folder = models.CharField(db_column='Target Field Folder', max_length=255, blank=True, null=True,
                                            validators=[validate_target_field_folder],
                                            help_text=r'Paste a valid field folder path like '
-                                                     r'\\grs.com\DFS\Jobs\2019\_Edmonton'
+                                                     r'\\grs-yyc-azuresync1\Public\2019\_Edmonton'
                                                      r'\19EF0397\Data & Calcs\1-Field Returns\20191227 AC\19EF0397'
                                                      r' AC 20191227 S1 CANNET')
     transmittals_folder = models.CharField(db_column='Transmittals Folder', max_length=255, blank=True, null=True)
@@ -532,7 +532,7 @@ class SurveyFileAutomation(models.Model):
 
     def get_survey_file_link(self):
         if self.document is not None and os.path.isfile(self.document.path):
-            document_unc_path = self.document.path.replace('T:', r'\\grs.com\DFS\GIS')
+            document_unc_path = self.document.path.replace('T:', r'\\grs-yyc-fs03\gis')
             document_link = get_target_url(document_unc_path)
             return document_link
         else:

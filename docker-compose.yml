@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  surveyfiles-web:
+    build:
+      context: .
+    container_name: surveyfiles-web
+    expose:
+      - 8000
+    volumes:
+      - .:/app
+      - staticfiles:/app/staticfiles/
+        # command: >
+        # sh -c "
+      #    python manage.py makemigrations &&
+      #    python manage.py migrate &&
+      #    python manage.py runserver 0.0.0.0:8000
+      #    "
+#    command: gunicorn SurveyFilesWebChecker.wsgi:application --bind 0.0.0.0:8000
+        command: python manage.py runserver 0.0.0.0:8000
+    restart: on-failure
+    deploy:
+      mode: replicated
+      replicas: 3
+
+    env_file:
+      - ./.env
+
+#  nginx:
+#    build: ./nginx
+#    container_name: web_nginx
+#    volumes:
+#      - staticfiles:/app/staticfiles/
+#    ports:
+#      - 8008:80
+#    depends_on:
+#      - surveyfiles-web
+
+volumes:
+  staticfiles:

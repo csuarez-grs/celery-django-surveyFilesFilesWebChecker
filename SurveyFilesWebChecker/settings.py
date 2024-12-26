@@ -216,7 +216,7 @@ DATABASES = {
         'HOST': config('DB_HOST'),
         'PORT': '',
         'OPTIONS': {
-            'driver': 'ODBC Driver 13 for SQL Server',
+            'driver': 'ODBC Driver 17 for SQL Server',
             # 'driver': 'SQL Server Native Client 11.0',
             'MARS_Connection': 'True',
         },
@@ -230,7 +230,7 @@ DATABASES = {
         'HOST': config('DB_HOST'),
         'PORT': '',
         'OPTIONS': {
-            'driver': 'ODBC Driver 13 for SQL Server',
+            'driver': 'ODBC Driver 17 for SQL Server',
             # 'driver': 'SQL Server Native Client 11.0',
             'MARS_Connection': 'True',
         },
@@ -244,7 +244,7 @@ DATABASES = {
         'HOST': config('DB_HOST'),
         'PORT': '',
         'OPTIONS': {
-            'driver': 'ODBC Driver 13 for SQL Server',
+            'driver': 'ODBC Driver 17 for SQL Server',
             # 'driver': 'SQL Server Native Client 11.0',
             'MARS_Connection': 'True',
         },
@@ -259,7 +259,7 @@ DATABASES = {
         'PORT': '',
 
         'OPTIONS': {
-            'driver': 'ODBC Driver 13 for SQL Server',
+            'driver': 'ODBC Driver 17 for SQL Server',
 
             # 'driver': 'SQL Server Native Client 11.0',
             'MARS_Connection': 'True',

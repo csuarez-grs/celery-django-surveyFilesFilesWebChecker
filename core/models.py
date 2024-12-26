@@ -17,8 +17,8 @@ from django.utils.html import format_html
 
 def get_job_folder_url(job_folder):
     folder_mapping = {
-        'S': r'\\grs.com\DFS\Municipal',
-        'R': r'\\grs.com\DFS\Jobs'
+        'S': r'\\grs-yyc-azuresync1\Public\Municipal',
+        'R': r'\\grs-yyc-azuresync1\Public'
     }
 
     job_folder_reformatted = None
